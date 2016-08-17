@@ -1,5 +1,8 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.2)
 project(ros_recognizer)
+
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
@@ -13,29 +16,37 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 ## System dependencies are found with CMake's conventions
-find_package(V4R REQUIRED)
+find_package(PCL 1.8 REQUIRED)
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
+include_directories(${PCL_INCLUDE_DIRS})
+#find_package(V4R REQUIRED)
 
-## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
+generate_dynamic_reconfigure_options(
+  cfg/local_3d_describer.cfg
+)
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES ros_recognizer
+  LIBRARIES
+    ros_recognizer_preprocessing
   CATKIN_DEPENDS dynamic_reconfigure nodelet pcl_conversions pcl_ros roscpp rospy sensor_msgs std_msgs
 )
 
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
 )
 
-# add_library(ros_recognizer
-#   src/${PROJECT_NAME}/ros_recognizer.cpp
-# )
-# add_dependencies(ros_recognizer ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_library(ros_recognizer_preprocessing
+  src/preprocessing/local_3d_describer.cpp
+)
+target_link_libraries(ros_recognizer_preprocessing
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
+)
+add_dependencies(ros_recognizer_preprocessing ${PROJECT_NAME}_gencfg)
 
 # add_executable(ros_recognizer_node src/ros_recognizer_node.cpp)
 # add_dependencies(ros_recognizer_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
