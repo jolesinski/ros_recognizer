@@ -21,6 +21,7 @@ struct Local3dDescription
   boost::shared_ptr<Eigen::Matrix4f> pose_;
   double input_resolution_ = .0;
 
+  Local3dDescription() { reset(); }
   void reset() {
     input_.reset(new pcl::PointCloud<pcl::PointXYZRGBA>());
     keypoints_.reset(new pcl::PointCloud<pcl::PointXYZRGBA>());
@@ -28,12 +29,15 @@ struct Local3dDescription
     descriptors_.reset(new pcl::PointCloud<pcl::SHOT1344>());
     ref_frames_.reset(new pcl::PointCloud<pcl::ReferenceFrame>());
     pose_.reset(new Eigen::Matrix4f(Eigen::Matrix4f::Identity()));
+    input_resolution_ = .0;
   }
 };
 
-class Local3dDescriber : private Reconfigurable<ros_recognizer::DescriberConfig>
+class Local3dDescriber : public Reconfigurable<ros_recognizer::DescriberConfig>
 {
+public:
   Local3dDescription describe(const sensor_msgs::PointCloud2ConstPtr& cloud_msg);
+
 private:
   void computeNormals(Local3dDescription& data);
   void computeKeypoints(Local3dDescription& data);

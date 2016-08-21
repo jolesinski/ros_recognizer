@@ -10,26 +10,31 @@ namespace ros_recognizer
 template <typename ConfigType>
 class Reconfigurable
 {
-public:
-  Reconfigurable(std::string name);
-
 protected:
   ConfigType cfg_;
 
-  void reconfigure() { cfg_ = new_cfg_; };
+public:
+  Reconfigurable() { reconfigure(cfg_.__getDefault__()); };
 
-private:
-  ConfigType new_cfg_;
-
-  dynamic_reconfigure::Server<ConfigType> cfg_srv_;
-  void cfg_cb(ConfigType &config, uint32_t level) { new_cfg_ = config; }
+  void reconfigure(const ConfigType& new_cfg) { cfg_ = new_cfg; };
 };
 
 template <typename ConfigType>
-Reconfigurable<ConfigType>::Reconfigurable(std::string name) : cfg_srv_(name)
+class DynamicallyReconfigurable : public Reconfigurable<ConfigType>
+{
+public:
+  DynamicallyReconfigurable(std::string name);
+
+private:
+  dynamic_reconfigure::Server<ConfigType> cfg_srv_;
+  void cfg_cb(ConfigType &config, uint32_t level) { reconfigure(config); }
+};
+
+template <typename ConfigType>
+DynamicallyReconfigurable<ConfigType>::DynamicallyReconfigurable(std::string name) : cfg_srv_(name)
 {
   typename dynamic_reconfigure::Server<ConfigType>::CallbackType cfg_srv_cb;
-  cfg_srv_cb = boost::bind(&Reconfigurable<ConfigType>::cfg_cb, this, _1, _2);
+  cfg_srv_cb = boost::bind(&DynamicallyReconfigurable<ConfigType>::cfg_cb, this, _1, _2);
   cfg_srv_.setCallback(cfg_srv_cb);
 }
 
