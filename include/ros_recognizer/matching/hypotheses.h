@@ -2,6 +2,9 @@
 #ifndef ROS_RECOGNIZER_HYPOTHESES_H
 #define ROS_RECOGNIZER_HYPOTHESES_H
 
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+
 namespace ros_recognizer
 {
 

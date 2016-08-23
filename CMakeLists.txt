@@ -70,6 +70,16 @@ target_link_libraries(ros_recognizer_matching
     )
 add_dependencies(ros_recognizer_matching ${PROJECT_NAME}_gencfg)
 
+
+add_library(ros_recognizer_verification
+    src/verification/verifier.cpp
+    )
+target_link_libraries(ros_recognizer_verification
+    ${catkin_LIBRARIES}
+    ${PCL_LIBRARIES}
+    )
+add_dependencies(ros_recognizer_verification ${PROJECT_NAME}_gencfg)
+
 # add_executable(ros_recognizer_node src/ros_recognizer_node.cpp)
 # add_dependencies(ros_recognizer_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 # target_link_libraries(ros_recognizer_node
@@ -88,14 +98,15 @@ add_dependencies(ros_recognizer_matching ${PROJECT_NAME}_gencfg)
 #   PATTERN ".svn" EXCLUDE
 # )
 
-catkin_add_gtest(test_preprocessing
+catkin_add_gtest(test_recognition
     test/test_local_3d_pipeline.cpp
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/test
 )
-if(TARGET test_preprocessing)
-  target_link_libraries(test_preprocessing
+if(TARGET test_recognition)
+  target_link_libraries(test_recognition
       ros_recognizer_preprocessing
       ros_recognizer_matching
+      ros_recognizer_verification
       ${PCL_LIBRARIES}
       ${catkin_LIBRARIES}
   )

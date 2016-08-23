@@ -4,14 +4,15 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <ros_recognizer/matching/local_matcher.h>
 #include <ros_recognizer/preprocessing/local_3d_describer.h>
+#include <ros_recognizer/verification/verifier.h>
 
 struct Local3dPipeline : testing::Test {
   sensor_msgs::PointCloud2Ptr model_input;
-  sensor_msgs::PointCloud2Ptr scene_input;
+  sensor_msgs::PointCloud2Ptr scene_with_single_model_input;
 
   Local3dPipeline() {
     model_input = loadPCD("data/model.pcd");
-    scene_input = loadPCD("data/scene.pcd");
+    scene_with_single_model_input = loadPCD("data/scene_with_single_instance.pcd");
   }
 
   sensor_msgs::PointCloud2Ptr loadPCD(const std::string& pcd_path)
@@ -56,7 +57,7 @@ TEST_F (Local3dPipeline, sceneLocal3dDescriber)
 {
   pcl::console::setVerbosityLevel(pcl::console::L_ERROR);
   ros_recognizer::Local3dDescriber describer;
-  auto scene_description = describer.describe(scene_input);
+  auto scene_description = describer.describe(scene_with_single_model_input);
 
   ASSERT_NE(scene_description.input_, nullptr);
   ASSERT_NE(scene_description.normals_, nullptr);
@@ -84,12 +85,27 @@ TEST_F (Local3dPipeline, localMatcher)
   pcl::console::setVerbosityLevel(pcl::console::L_ERROR);
   ros_recognizer::Local3dDescriber describer;
   auto model_description = describer.describe(model_input);
-  auto scene_description = describer.describe(scene_input);
+  auto scene_description = describer.describe(scene_with_single_model_input);
 
   ros_recognizer::LocalMatcher matcher;
   auto hypotheses = matcher.match(model_description, scene_description);
   EXPECT_GT(hypotheses.poses_.size(), 0);
   std::cout << "Hypotheses: " << hypotheses.poses_.size() << std::endl;
+}
+
+TEST_F (Local3dPipeline, singleInstanceVerification)
+{
+  pcl::console::setVerbosityLevel(pcl::console::L_ERROR);
+  ros_recognizer::Local3dDescriber describer;
+  auto model_description = describer.describe(model_input);
+  auto scene_description = describer.describe(scene_with_single_model_input);
+
+  ros_recognizer::LocalMatcher matcher;
+  auto hypotheses = matcher.match(model_description, scene_description);
+
+  ros_recognizer::Verifier verifier;
+  auto instances = verifier.filter(hypotheses);
+  EXPECT_EQ(instances.poses_.size(), 1);
 }
 
 int main(int argc, char **argv)
