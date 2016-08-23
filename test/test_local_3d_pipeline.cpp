@@ -4,27 +4,33 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <ros_recognizer/preprocessing/local_3d_describer.h>
 
-sensor_msgs::PointCloud2Ptr loadPCD(const std::string& pcd_path)
-{
-  system("pwd");
-  pcl::PCLPointCloud2 pcl_cloud;
-  if (pcl::io::loadPCDFile(pcd_path, pcl_cloud) == -1 || pcl_cloud.width == 0)
-    throw std::runtime_error("Failed to load from " + pcd_path);
+struct Local3dPipeline : testing::Test {
+  sensor_msgs::PointCloud2Ptr model_input;
+  sensor_msgs::PointCloud2Ptr scene_input;
 
-  sensor_msgs::PointCloud2Ptr ros_cloud(new sensor_msgs::PointCloud2);
-  pcl_conversions::fromPCL(pcl_cloud, *ros_cloud);
-  return ros_cloud;
-}
+  Local3dPipeline() {
+    model_input = loadPCD("data/model.pcd");
+    scene_input = loadPCD("data/scene.pcd");
+  }
 
-TEST (Preprocessing, modelLocal3dDescriber)
+  sensor_msgs::PointCloud2Ptr loadPCD(const std::string& pcd_path)
+  {
+    system("pwd");
+    pcl::PCLPointCloud2 pcl_cloud;
+    if (pcl::io::loadPCDFile(pcd_path, pcl_cloud) == -1 || pcl_cloud.width == 0)
+      throw std::runtime_error("Failed to load from " + pcd_path);
+
+    sensor_msgs::PointCloud2Ptr ros_cloud(new sensor_msgs::PointCloud2);
+    pcl_conversions::fromPCL(pcl_cloud, *ros_cloud);
+    return ros_cloud;
+  }
+
+};
+
+TEST_F (Local3dPipeline, modelLocal3dDescriber)
 {
   ros_recognizer::Local3dDescriber describer;
-
-  auto model_cloud = loadPCD("data/model.pcd");
-
-  ASSERT_NE(model_cloud, nullptr);
-
-  auto model_description = describer.describe(model_cloud);
+  auto model_description = describer.describe(model_input);
 
   ASSERT_NE(model_description.input_, nullptr);
   ASSERT_NE(model_description.normals_, nullptr);
@@ -45,16 +51,11 @@ TEST (Preprocessing, modelLocal3dDescriber)
             model_description.descriptors_->size());
 }
 
-TEST (Preprocessing, sceneLocal3dDescriber)
+TEST_F (Local3dPipeline, sceneLocal3dDescriber)
 {
   pcl::console::setVerbosityLevel(pcl::console::L_ERROR);
   ros_recognizer::Local3dDescriber describer;
-
-  auto scene_cloud = loadPCD("data/scene.pcd");
-
-  ASSERT_NE(scene_cloud, nullptr);
-
-  auto scene_description = describer.describe(scene_cloud);
+  auto scene_description = describer.describe(scene_input);
 
   ASSERT_NE(scene_description.input_, nullptr);
   ASSERT_NE(scene_description.normals_, nullptr);
@@ -73,6 +74,11 @@ TEST (Preprocessing, sceneLocal3dDescriber)
             scene_description.keypoints_->size());
   EXPECT_EQ(scene_description.ref_frames_->size(),
             scene_description.descriptors_->size());
+}
+
+TEST_F (Local3dPipeline, localMatcher)
+{
+
 }
 
 int main(int argc, char **argv)

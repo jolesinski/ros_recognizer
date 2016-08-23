@@ -33,7 +33,7 @@ struct Local3dDescription
   }
 };
 
-class Local3dDescriber : public Reconfigurable<ros_recognizer::DescriberConfig>
+class Local3dDescriber : public Reconfigurable<DescriberConfig>
 {
 public:
   Local3dDescription describe(const sensor_msgs::PointCloud2ConstPtr& cloud_msg);

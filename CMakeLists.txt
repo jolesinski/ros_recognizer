@@ -27,6 +27,7 @@ MESSAGE( STATUS "PCL_INCLUDE_HEADERS: " ${PCL_INCLUDE_DIRS} )
 
 generate_dynamic_reconfigure_options(
   cfg/local_3d_describer.cfg
+  cfg/local_matcher.cfg
 )
 
 catkin_package(
@@ -60,6 +61,15 @@ target_link_libraries(ros_recognizer_preprocessing
 )
 add_dependencies(ros_recognizer_preprocessing ${PROJECT_NAME}_gencfg)
 
+add_library(ros_recognizer_matching
+    src/matching/local_matcher.cpp
+    )
+target_link_libraries(ros_recognizer_matching
+    ${catkin_LIBRARIES}
+    ${PCL_LIBRARIES}
+    )
+add_dependencies(ros_recognizer_matching ${PROJECT_NAME}_gencfg)
+
 # add_executable(ros_recognizer_node src/ros_recognizer_node.cpp)
 # add_dependencies(ros_recognizer_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 # target_link_libraries(ros_recognizer_node
@@ -79,7 +89,7 @@ add_dependencies(ros_recognizer_preprocessing ${PROJECT_NAME}_gencfg)
 # )
 
 catkin_add_gtest(test_preprocessing
-    test/test_preprocessing.cpp
+    test/test_local_3d_pipeline.cpp
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/test
 )
 if(TARGET test_preprocessing)
