@@ -95,6 +95,7 @@ catkin_add_gtest(test_preprocessing
 if(TARGET test_preprocessing)
   target_link_libraries(test_preprocessing
       ros_recognizer_preprocessing
+      ros_recognizer_matching
       ${PCL_LIBRARIES}
       ${catkin_LIBRARIES}
   )

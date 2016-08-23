@@ -2,6 +2,7 @@
 
 #include <pcl/io/pcd_io.h>
 #include <pcl_conversions/pcl_conversions.h>
+#include <ros_recognizer/matching/local_matcher.h>
 #include <ros_recognizer/preprocessing/local_3d_describer.h>
 
 struct Local3dPipeline : testing::Test {
@@ -72,13 +73,23 @@ TEST_F (Local3dPipeline, sceneLocal3dDescriber)
 
   EXPECT_GE(scene_description.input_->size(),
             scene_description.keypoints_->size());
+  EXPECT_EQ(scene_description.keypoints_->size(),
+            scene_description.descriptors_->size());
   EXPECT_EQ(scene_description.ref_frames_->size(),
             scene_description.descriptors_->size());
 }
 
 TEST_F (Local3dPipeline, localMatcher)
 {
+  pcl::console::setVerbosityLevel(pcl::console::L_ERROR);
+  ros_recognizer::Local3dDescriber describer;
+  auto model_description = describer.describe(model_input);
+  auto scene_description = describer.describe(scene_input);
 
+  ros_recognizer::LocalMatcher matcher;
+  auto hypotheses = matcher.match(model_description, scene_description);
+  EXPECT_GT(hypotheses.poses_.size(), 0);
+  std::cout << "Hypotheses: " << hypotheses.poses_.size() << std::endl;
 }
 
 int main(int argc, char **argv)
