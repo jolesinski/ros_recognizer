@@ -28,6 +28,7 @@ MESSAGE( STATUS "PCL_INCLUDE_HEADERS: " ${PCL_INCLUDE_DIRS} )
 generate_dynamic_reconfigure_options(
   cfg/local_3d_describer.cfg
   cfg/local_matcher.cfg
+  cfg/verifier.cfg
 )
 
 catkin_package(
