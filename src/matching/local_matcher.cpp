@@ -21,7 +21,7 @@ ros_recognizer::LocalMatcher::findCorrespondences(const ros_recognizer::Local3dD
                                                   const ros_recognizer::Local3dDescription& scene)
 {
   pcl::ScopeTime timeit("Correspondences");
-  pcl::CorrespondencesPtr correspondences(new pcl::Correspondences);
+  std::vector<pcl::Correspondences> per_point_corrs(scene.descriptors_->size());
   pcl::KdTreeFLANN<pcl::SHOT1344, ::flann::L1<float>> match_search;
   match_search.setInputCloud(model.descriptors_);
   std::vector<int> neigh_indices(10);
@@ -29,6 +29,7 @@ ros_recognizer::LocalMatcher::findCorrespondences(const ros_recognizer::Local3dD
 
   // For each scene keypoint descriptor, find nearest neighbor into the
   // model keypoints descriptor cloud and add it to the correspondences vector.
+#pragma omp parallel for shared (per_point_corrs) private (neigh_indices, neigh_sqr_dists) num_threads(8)
   for (size_t descr_idx = 0; descr_idx < scene.descriptors_->size(); ++descr_idx)
   {
     if (!pcl_isfinite ((*scene.descriptors_)[descr_idx].descriptor[0])) //skipping NaNs
@@ -47,10 +48,23 @@ ros_recognizer::LocalMatcher::findCorrespondences(const ros_recognizer::Local3dD
       pcl::Correspondence corr(neigh_indices[corr_idx],
                                static_cast<int>(descr_idx),
                                neigh_sqr_dists[corr_idx]);
-      correspondences->push_back(corr);
+
+      per_point_corrs[descr_idx].push_back(corr);
     }
   }
-  return correspondences;
+
+  //Fill output vector
+  pcl::CorrespondencesPtr output_corrs(new pcl::Correspondences);
+  size_t total_size{ 0 };
+  for (auto const& items: per_point_corrs){
+    total_size += items.size();
+  }
+
+  output_corrs->reserve(total_size);
+  for (auto& items: per_point_corrs){
+    std::move(items.begin(), items.end(), std::back_inserter(*output_corrs));
+  }
+  return output_corrs;
 }
 
 ros_recognizer::Hypotheses
