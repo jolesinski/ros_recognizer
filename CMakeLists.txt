@@ -54,7 +54,6 @@ include_directories(
 add_library(ros_recognizer_preprocessing
   src/preprocessing/local_3d_describer.cpp
 )
-
 target_link_libraries(ros_recognizer_preprocessing
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
@@ -81,7 +80,12 @@ add_dependencies(ros_recognizer_preprocessing ${PROJECT_NAME}_gencfg)
 
 catkin_add_gtest(test_preprocessing
     test/test_preprocessing.cpp
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/test)
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/test
+)
 if(TARGET test_preprocessing)
-  target_link_libraries(test_preprocessing ros_recognizer_preprocessing ${PCL_LIBRARIES} ${catkin_LIBRARIES})
+  target_link_libraries(test_preprocessing
+      ros_recognizer_preprocessing
+      ${PCL_LIBRARIES}
+      ${catkin_LIBRARIES}
+  )
 endif()

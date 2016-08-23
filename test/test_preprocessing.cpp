@@ -32,7 +32,7 @@ TEST (Preprocessing, modelLocal3dDescriber)
   ASSERT_NE(model_description.ref_frames_, nullptr);
   ASSERT_NE(model_description.descriptors_, nullptr);
 
-  EXPECT_GT(model_description.input_resolution_, .0);
+  //EXPECT_GT(model_description.input_resolution_, .0);
   EXPECT_NE(model_description.input_->size(), 0);
   EXPECT_NE(model_description.normals_->size(), 0);
   EXPECT_NE(model_description.keypoints_->size(), 0);
@@ -41,10 +41,13 @@ TEST (Preprocessing, modelLocal3dDescriber)
 
   EXPECT_GE(model_description.input_->size(),
             model_description.keypoints_->size());
+  EXPECT_EQ(model_description.ref_frames_->size(),
+            model_description.descriptors_->size());
 }
 
 TEST (Preprocessing, sceneLocal3dDescriber)
 {
+  pcl::console::setVerbosityLevel(pcl::console::L_ERROR);
   ros_recognizer::Local3dDescriber describer;
 
   auto scene_cloud = loadPCD("data/scene.pcd");
@@ -59,7 +62,7 @@ TEST (Preprocessing, sceneLocal3dDescriber)
   ASSERT_NE(scene_description.ref_frames_, nullptr);
   ASSERT_NE(scene_description.descriptors_, nullptr);
 
-  EXPECT_GT(scene_description.input_resolution_, .0);
+  //EXPECT_GT(scene_description.input_resolution_, .0);
   EXPECT_NE(scene_description.input_->size(), 0);
   EXPECT_NE(scene_description.normals_->size(), 0);
   EXPECT_NE(scene_description.keypoints_->size(), 0);
@@ -68,6 +71,8 @@ TEST (Preprocessing, sceneLocal3dDescriber)
 
   EXPECT_GE(scene_description.input_->size(),
             scene_description.keypoints_->size());
+  EXPECT_EQ(scene_description.ref_frames_->size(),
+            scene_description.descriptors_->size());
 }
 
 int main(int argc, char **argv)
