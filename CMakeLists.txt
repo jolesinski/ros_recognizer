@@ -64,21 +64,21 @@ add_dependencies(ros_recognizer_preprocessing ${PROJECT_NAME}_gencfg)
 
 add_library(ros_recognizer_matching
     src/matching/local_matcher.cpp
-    )
+)
 target_link_libraries(ros_recognizer_matching
     ${catkin_LIBRARIES}
     ${PCL_LIBRARIES}
-    )
+)
 add_dependencies(ros_recognizer_matching ${PROJECT_NAME}_gencfg)
 
 
 add_library(ros_recognizer_verification
     src/verification/verifier.cpp
-    )
+)
 target_link_libraries(ros_recognizer_verification
     ${catkin_LIBRARIES}
     ${PCL_LIBRARIES}
-    )
+)
 add_dependencies(ros_recognizer_verification ${PROJECT_NAME}_gencfg)
 
 # add_executable(ros_recognizer_node src/ros_recognizer_node.cpp)
@@ -110,5 +110,5 @@ if(TARGET test_recognition)
       ros_recognizer_verification
       ${PCL_LIBRARIES}
       ${catkin_LIBRARIES}
-  )
+)
 endif()
