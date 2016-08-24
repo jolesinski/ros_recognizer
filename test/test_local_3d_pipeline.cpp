@@ -1,3 +1,5 @@
+#define ROS_RECOGNIZER_OUTSIDE_ROS_NODE
+
 #include <gtest/gtest.h>
 
 #include <pcl/io/pcd_io.h>
