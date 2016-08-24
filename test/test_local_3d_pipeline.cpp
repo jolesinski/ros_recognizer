@@ -9,15 +9,16 @@
 struct Local3dPipeline : testing::Test {
   sensor_msgs::PointCloud2Ptr model_input;
   sensor_msgs::PointCloud2Ptr scene_with_single_model_input;
+  std::shared_ptr<Eigen::Matrix4f> ground_truth_pose;
 
   Local3dPipeline() {
     model_input = loadPCD("data/model.pcd");
     scene_with_single_model_input = loadPCD("data/scene_with_single_instance.pcd");
+    ground_truth_pose = loadGroundTruth("data/ground_truth_pose.pcd");
   }
 
   sensor_msgs::PointCloud2Ptr loadPCD(const std::string& pcd_path)
   {
-    system("pwd");
     pcl::PCLPointCloud2 pcl_cloud;
     if (pcl::io::loadPCDFile(pcd_path, pcl_cloud) == -1 || pcl_cloud.width == 0)
       throw std::runtime_error("Failed to load from " + pcd_path);
@@ -25,6 +26,33 @@ struct Local3dPipeline : testing::Test {
     sensor_msgs::PointCloud2Ptr ros_cloud(new sensor_msgs::PointCloud2);
     pcl_conversions::fromPCL(pcl_cloud, *ros_cloud);
     return ros_cloud;
+  }
+
+  std::shared_ptr<Eigen::Matrix4f> loadGroundTruth(const std::string& pose_path)
+  {
+    std::shared_ptr<Eigen::Matrix4f> pose(new Eigen::Matrix4f);
+    std::ifstream file(pose_path);
+    float pose_elem;
+    Eigen::Matrix3f rotation;
+    Eigen::Vector3f translation;
+    for (int idx = 0; file >> pose_elem; idx++)
+    {
+      auto row = idx / 4;
+      auto col = idx % 4;
+
+      if (row == 3)
+        break;
+
+      if (col == 3)
+        translation[row] = pose_elem;
+      else
+        rotation(row, col) = pose_elem;
+    }
+    //Affine inverse
+    pose->block(0,0,3,3) << rotation.transpose();
+    pose->block(0,3,3,1) << -rotation.transpose()*translation;
+
+    return pose;
   }
 
 };
@@ -104,8 +132,14 @@ TEST_F (Local3dPipeline, singleInstanceVerification)
   auto hypotheses = matcher.match(model_description, scene_description);
 
   ros_recognizer::Verifier verifier;
-  auto instances = verifier.filter(hypotheses);
-  EXPECT_EQ(instances.poses_.size(), 1);
+  auto instances = verifier.filter(hypotheses,
+                                   model_description.input_,
+                                   scene_description.input_);
+  ASSERT_EQ(instances.poses_.size(), 1);
+
+  float translation_error = (ground_truth_pose->block(0,3,3,1)
+                             - instances.poses_.front().block(0,3,3,1)).norm();
+  EXPECT_LE(translation_error, 0.01);
 }
 
 int main(int argc, char **argv)
