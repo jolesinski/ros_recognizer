@@ -28,6 +28,8 @@ private:
   ros::Subscriber scene_subscriber_;
   ros::ServiceServer model_cloud_service_;
   ros::ServiceServer model_pcd_service_;
+
+  sensor_msgs::PointCloud2Ptr loadPCD(const std::string& pcd_path);
 };
 
 }
