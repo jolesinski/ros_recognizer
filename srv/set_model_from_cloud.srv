@@ -1,0 +1,2 @@
+sensor_msgs/PointCloud2 model_cloud # pointcloud with object model
+---

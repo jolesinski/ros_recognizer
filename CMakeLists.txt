@@ -14,6 +14,7 @@ find_package(catkin COMPONENTS
   rospy
   sensor_msgs
   std_msgs
+  message_generation
   REQUIRED
 )
 
@@ -29,6 +30,18 @@ generate_dynamic_reconfigure_options(
   cfg/local_3d_describer.cfg
   cfg/local_matcher.cfg
   cfg/verifier.cfg
+)
+
+add_service_files(
+    FILES
+    set_model_from_cloud.srv
+    set_model_from_pcd.srv
+)
+
+generate_messages(
+    DEPENDENCIES
+    std_msgs
+    sensor_msgs
 )
 
 catkin_package(
