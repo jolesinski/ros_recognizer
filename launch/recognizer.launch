@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="nodelet" type="nodelet" name="recognizer_mgr"  args="manager" output="screen"/>
+    <node pkg="nodelet" type="nodelet" name="ros_recognizer"
+          args="load ros_recognizer::Recognizer recognizer_mgr" output="screen"/>
+</launch>

@@ -1,0 +1,7 @@
+<library path="lib/libros_recognizer_nodelet">
+    <class type="ros_recognizer::Recognizer" base_class_type="nodelet::Nodelet">
+        <description>
+            Nodelet for recognition pipeline.
+        </description>
+    </class>
+</library>

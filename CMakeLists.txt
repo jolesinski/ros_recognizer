@@ -81,11 +81,14 @@ target_link_libraries(ros_recognizer_verification
 )
 add_dependencies(ros_recognizer_verification ${PROJECT_NAME}_gencfg)
 
-# add_executable(ros_recognizer_node src/ros_recognizer_node.cpp)
-# add_dependencies(ros_recognizer_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-# target_link_libraries(ros_recognizer_node
-#   ${catkin_LIBRARIES}
-# )
+add_library(ros_recognizer_nodelet src/nodelet/recognizer.cpp)
+target_link_libraries(ros_recognizer_nodelet
+    ros_recognizer_preprocessing
+    ros_recognizer_matching
+    ros_recognizer_verification
+    ${PCL_LIBRARIES}
+    ${catkin_LIBRARIES}
+)
 
 # install(TARGETS ros_recognizer ros_recognizer_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
