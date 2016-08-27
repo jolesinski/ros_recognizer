@@ -29,7 +29,6 @@ MESSAGE( STATUS "PCL_INCLUDE_HEADERS: " ${PCL_INCLUDE_DIRS} )
 generate_dynamic_reconfigure_options(
   cfg/local_3d_describer.cfg
   cfg/local_matcher.cfg
-  cfg/refiner.cfg
   cfg/verifier.cfg
 )
 
@@ -84,15 +83,6 @@ target_link_libraries(ros_recognizer_matching
     ${PCL_LIBRARIES}
 )
 add_dependencies(ros_recognizer_matching ${PROJECT_NAME}_gencfg)
-
-add_library(ros_recognizer_refininig
-    src/refining/refiner.cpp
-)
-target_link_libraries(ros_recognizer_refininig
-    ${catkin_LIBRARIES}
-    ${PCL_LIBRARIES}
-)
-add_dependencies(ros_recognizer_refininig ${PROJECT_NAME}_gencfg)
 
 add_library(ros_recognizer_verification
     src/verification/verifier.cpp
