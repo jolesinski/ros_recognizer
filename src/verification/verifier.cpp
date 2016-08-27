@@ -9,7 +9,6 @@
 
 ros_recognizer::Hypotheses
 ros_recognizer::Verifier::verify(const ros_recognizer::Hypotheses& hyps,
-                                 const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr& model,
                                  const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr& scene)
 {
   pcl::ScopeTime timeit("GlobalVerification");
@@ -23,11 +22,7 @@ ros_recognizer::Verifier::verify(const ros_recognizer::Hypotheses& hyps,
   {
     pcl::ScopeTime timeit2("RegisteringInstances");
     for (const auto& hyp : hyps)
-    {
-      pcl::PointCloud<pcl::PointXYZRGBA>::Ptr instance(new pcl::PointCloud<pcl::PointXYZRGBA>);
-      pcl::transformPointCloud(*model, *instance, hyp.pose_);
-      instances.push_back(instance);
-    }
+      instances.push_back(hyp.registered_model_);
   }
   hv.addModels(instances, true);
 
@@ -77,16 +72,16 @@ ros_recognizer::Verifier::refine(const ros_recognizer::Hypotheses& hyps,
   //icp.setEuclideanFitnessEpsilon (1);
   for(const auto& hyp : hyps)
   {
-    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr model_registered(new pcl::PointCloud<pcl::PointXYZRGBA>);
-    icp.align(*model_registered, hyp.pose_);
+    Hypothesis refined_hyp;
+    refined_hyp.registered_model_.reset(new pcl::PointCloud<pcl::PointXYZRGBA>);
+    icp.align(*refined_hyp.registered_model_, hyp.pose_);
     if (icp.hasConverged())
     {
-      Hypothesis refined_hyp;
       refined_hyp.pose_ = icp.getFinalTransformation();
       if(cfg_.icp_two_pass)
       {
         icp.setMaxCorrespondenceDistance(cfg_.icp_corr_dist / 10);
-        icp.align(*model_registered, icp.getFinalTransformation());
+        icp.align(*refined_hyp.registered_model_, icp.getFinalTransformation());
         if(icp.hasConverged())
           refined_hyp.pose_ = icp.getFinalTransformation();
         icp.setMaxCorrespondenceDistance(cfg_.icp_corr_dist);

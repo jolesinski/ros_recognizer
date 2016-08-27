@@ -14,6 +14,8 @@ using Poses = std::vector<Pose, Eigen::aligned_allocator<Pose>>;
 struct Hypothesis
 {
   Eigen::Matrix4f pose_;
+  pcl::PointCloud<pcl::PointXYZRGBA>::Ptr registered_model_;
+  bool is_valid_ = false;
 
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW

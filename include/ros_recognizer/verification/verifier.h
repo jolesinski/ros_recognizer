@@ -13,7 +13,6 @@ class Verifier : public Reconfigurable<VerifierConfig>
 {
 public:
   Hypotheses verify(const ros_recognizer::Hypotheses& hyps,
-                    const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr& model,
                     const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr& scene);
 
   Hypotheses refine(const ros_recognizer::Hypotheses& hyps,

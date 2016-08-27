@@ -134,9 +134,8 @@ TEST_F (Local3dPipeline, singleInstanceVerification)
   auto hypotheses = matcher.match(model_description, scene_description);
 
   ros_recognizer::Verifier verifier;
-  auto instances = verifier.verify(hypotheses,
-                                   model_description.input_,
-                                   scene_description.input_);
+  hypotheses = verifier.refine(hypotheses, model_description.input_, scene_description.input_);
+  auto instances = verifier.verify(hypotheses, scene_description.input_);
   ASSERT_EQ(instances.size(), 1);
 
   float translation_error = (ground_truth_pose->block(0,3,3,1)
