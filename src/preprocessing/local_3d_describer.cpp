@@ -8,7 +8,7 @@
 #include <pcl_conversions/pcl_conversions.h>
 
 ros_recognizer::Local3dDescription
-ros_recognizer::Local3dDescriber::describe(const sensor_msgs::PointCloud2& cloud_msg)
+ros_recognizer::Local3dDescriber::operator()(const sensor_msgs::PointCloud2& cloud_msg)
 {
   ros_recognizer::Local3dDescription description;
   {

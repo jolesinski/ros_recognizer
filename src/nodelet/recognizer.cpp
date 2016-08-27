@@ -20,11 +20,10 @@ void ros_recognizer::Recognizer::sceneCallback(const sensor_msgs::PointCloud2Con
 {
   NODELET_INFO("Received scene cloud! Yippie!");
   refreshCfg();
-  NODELET_INFO("Config refreshed");
 
-  auto scene_description = desciber.describe(*scene_msg);
-  auto hypotheses = matcher.match(model_description, scene_description);
-  hypotheses = verifier.verify(hypotheses, scene_description.input_);
+  auto scene_description = desciber(*scene_msg);
+  auto hypotheses = matcher(model_description, scene_description);
+  hypotheses = verifier(hypotheses, scene_description.input_);
   auto instances = std::count_if(std::begin(hypotheses), std::end(hypotheses),
                                 [](const Hypothesis& hyp) { return hyp.is_valid_; });
   NODELET_INFO("Found %ld instances out of %lu hypotheses", instances, hypotheses.size());
@@ -36,7 +35,7 @@ bool ros_recognizer::Recognizer::setModelFromCloud(ros_recognizer::set_model_fro
   NODELET_INFO("Received new model cloud! Yayey!");
   refreshCfg();
 
-  model_description = desciber.describe(request.model_cloud);
+  model_description = desciber(request.model_cloud);
 
   return true;
 }
@@ -58,7 +57,7 @@ bool ros_recognizer::Recognizer::setModelFromPCD(ros_recognizer::set_model_from_
     NODELET_ERROR("Error while setting model: %s", err.what());
     return false;
   }
-  model_description = desciber.describe(*model_cloud);
+  model_description = desciber(*model_cloud);
 
   NODELET_INFO("Loaded model from pcd! Yahoo!");
   return true;
@@ -86,7 +85,7 @@ void ros_recognizer::Recognizer::initModel()
 {
   std::string model_path;
   if (node_handle_.getParam("model_path", model_path))
-    model_description = desciber.describe(*loadPCD(model_path));
+    model_description = desciber(*loadPCD(model_path));
   else
     throw std::runtime_error("Initial model pcd path not specified");
 }

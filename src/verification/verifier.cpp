@@ -8,14 +8,21 @@
 #include <boost/pointer_cast.hpp>
 
 ros_recognizer::Hypotheses
-ros_recognizer::Verifier::verify(const ros_recognizer::Hypotheses& hyps,
-                                 const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr& scene)
+ros_recognizer::Verifier::operator()(const ros_recognizer::Hypotheses& hyps,
+                                     const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr& scene)
 {
   auto refined_hyps = refine(hyps, scene);
+  validate(refined_hyps, scene);
 
+  return refined_hyps;
+}
+
+void ros_recognizer::Verifier::validate(ros_recognizer::Hypotheses& hyps,
+                                        const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr& scene)
+{
   pcl::ScopeTime timeit("GlobalVerification");
 
-  std::vector<bool> hypotheses_mask(refined_hyps.size(), false);
+  std::vector<bool> hypotheses_mask(hyps.size(), false);
   pcl::GlobalHypothesesVerification<pcl::PointXYZRGBA, pcl::PointXYZRGBA> hv;
 
   hv.setSceneCloud(boost::const_pointer_cast<pcl::PointCloud<pcl::PointXYZRGBA>>(scene));
@@ -23,7 +30,7 @@ ros_recognizer::Verifier::verify(const ros_recognizer::Hypotheses& hyps,
   std::vector<pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr> instances;
   {
     pcl::ScopeTime timeit2("RegisteringInstances");
-    for (const auto& hyp : refined_hyps)
+    for (const auto& hyp : hyps)
       instances.push_back(hyp.registered_model_);
   }
   hv.addModels(instances, true);
@@ -43,9 +50,7 @@ ros_recognizer::Verifier::verify(const ros_recognizer::Hypotheses& hyps,
   hv.getMask(hypotheses_mask);
 
   for (auto idx = 0u; idx < hypotheses_mask.size(); ++idx)
-    refined_hyps.at(idx).is_valid_ = hypotheses_mask[idx];
-
-  return refined_hyps;
+    hyps.at(idx).is_valid_ = hypotheses_mask[idx];
 }
 
 ros_recognizer::Hypotheses

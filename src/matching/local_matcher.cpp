@@ -8,7 +8,7 @@
 #include <pcl/recognition/cg/hough_3d.h>
 
 ros_recognizer::Hypotheses
-ros_recognizer::LocalMatcher::match(const ros_recognizer::Local3dDescription& model,
+ros_recognizer::LocalMatcher::operator()(const ros_recognizer::Local3dDescription& model,
                                                                const ros_recognizer::Local3dDescription& scene)
 {
   auto corrs = findCorrespondences(model, scene);

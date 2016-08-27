@@ -14,7 +14,7 @@ namespace ros_recognizer
 class LocalMatcher : public Reconfigurable<MatcherConfig>
 {
 public:
-  Hypotheses match(const Local3dDescription& model, const Local3dDescription& scene);
+  Hypotheses operator()(const Local3dDescription& model, const Local3dDescription& scene);
 
 private:
   pcl::CorrespondencesPtr findCorrespondences(const Local3dDescription& model,
