@@ -8,10 +8,18 @@
 namespace ros_recognizer
 {
 
-struct Hypotheses
+using Pose = Eigen::Matrix4f;
+using Poses = std::vector<Pose, Eigen::aligned_allocator<Pose>>;
+
+struct Hypothesis
 {
-  std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> poses_;
+  Eigen::Matrix4f pose_;
+
+public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
+
+using Hypotheses = std::vector<Hypothesis, Eigen::aligned_allocator<Hypothesis>>;
 
 }
 

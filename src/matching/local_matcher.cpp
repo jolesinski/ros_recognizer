@@ -11,6 +11,7 @@ ros_recognizer::Hypotheses
 ros_recognizer::LocalMatcher::match(const ros_recognizer::Local3dDescription& model,
                                                                const ros_recognizer::Local3dDescription& scene)
 {
+  refresh_config();
   auto corrs = findCorrespondences(model, scene);
   std::cout << "Correspondences found: " << corrs->size() << std::endl;
   return groupCorrespondences(model, scene, corrs);
@@ -73,7 +74,6 @@ ros_recognizer::LocalMatcher::groupCorrespondences(const ros_recognizer::Local3d
                                                    const pcl::CorrespondencesConstPtr& correspondences)
 {
   pcl::ScopeTime timeit("Clustering");
-  ros_recognizer::Hypotheses hypotheses;
 
   //TODO: rewrite to use color (from v4r)
   pcl::Hough3DGrouping<pcl::PointXYZRGBA, pcl::PointXYZRGBA> clusterer;
@@ -88,6 +88,15 @@ ros_recognizer::LocalMatcher::groupCorrespondences(const ros_recognizer::Local3d
   clusterer.setSceneRf (scene.ref_frames_);
   clusterer.setModelSceneCorrespondences (correspondences);
 
-  clusterer.recognize(hypotheses.poses_);
+  Poses poses;
+  clusterer.recognize(poses);
+
+  ros_recognizer::Hypotheses hypotheses;
+  for (const Pose& pose : poses)
+  {
+    Hypothesis hyp;
+    hyp.pose_ = pose;
+    hypotheses.push_back(hyp);
+  }
   return hypotheses;
 }

@@ -62,7 +62,7 @@ struct Local3dPipeline : testing::Test {
 TEST_F (Local3dPipeline, modelLocal3dDescriber)
 {
   ros_recognizer::Local3dDescriber describer;
-  auto model_description = describer.describe(model_input);
+  auto model_description = describer.describe(*model_input);
 
   ASSERT_NE(model_description.input_, nullptr);
   ASSERT_NE(model_description.normals_, nullptr);
@@ -87,7 +87,7 @@ TEST_F (Local3dPipeline, sceneLocal3dDescriber)
 {
   pcl::console::setVerbosityLevel(pcl::console::L_ERROR);
   ros_recognizer::Local3dDescriber describer;
-  auto scene_description = describer.describe(scene_with_single_model_input);
+  auto scene_description = describer.describe(*scene_with_single_model_input);
 
   ASSERT_NE(scene_description.input_, nullptr);
   ASSERT_NE(scene_description.normals_, nullptr);
@@ -114,33 +114,33 @@ TEST_F (Local3dPipeline, localMatcher)
 {
   pcl::console::setVerbosityLevel(pcl::console::L_ERROR);
   ros_recognizer::Local3dDescriber describer;
-  auto model_description = describer.describe(model_input);
-  auto scene_description = describer.describe(scene_with_single_model_input);
+  auto model_description = describer.describe(*model_input);
+  auto scene_description = describer.describe(*scene_with_single_model_input);
 
   ros_recognizer::LocalMatcher matcher;
   auto hypotheses = matcher.match(model_description, scene_description);
-  EXPECT_GT(hypotheses.poses_.size(), 0);
-  std::cout << "Hypotheses: " << hypotheses.poses_.size() << std::endl;
+  EXPECT_GT(hypotheses.size(), 0);
+  std::cout << "Hypotheses: " << hypotheses.size() << std::endl;
 }
 
 TEST_F (Local3dPipeline, singleInstanceVerification)
 {
   pcl::console::setVerbosityLevel(pcl::console::L_ERROR);
   ros_recognizer::Local3dDescriber describer;
-  auto model_description = describer.describe(model_input);
-  auto scene_description = describer.describe(scene_with_single_model_input);
+  auto model_description = describer.describe(*model_input);
+  auto scene_description = describer.describe(*scene_with_single_model_input);
 
   ros_recognizer::LocalMatcher matcher;
   auto hypotheses = matcher.match(model_description, scene_description);
 
   ros_recognizer::Verifier verifier;
-  auto instances = verifier.filter(hypotheses,
+  auto instances = verifier.verify(hypotheses,
                                    model_description.input_,
                                    scene_description.input_);
-  ASSERT_EQ(instances.poses_.size(), 1);
+  ASSERT_EQ(instances.size(), 1);
 
   float translation_error = (ground_truth_pose->block(0,3,3,1)
-                             - instances.poses_.front().block(0,3,3,1)).norm();
+                             - instances.front().pose_.block(0,3,3,1)).norm();
   EXPECT_LE(translation_error, 0.01);
 }
 
