@@ -1,5 +1,6 @@
 <launch>
-    <node pkg="nodelet" type="nodelet" name="recognizer_mgr"  args="manager" output="screen"/>
     <node pkg="nodelet" type="nodelet" name="ros_recognizer"
-          args="load ros_recognizer::Recognizer recognizer_mgr" output="screen"/>
+          args="standalone ros_recognizer::Recognizer" output="screen">
+        <param name="model_path" type="string" value="$(find ros_recognizer)/test/data/model.pcd"/>
+    </node>
 </launch>

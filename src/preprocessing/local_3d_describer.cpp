@@ -8,20 +8,21 @@
 #include <pcl_conversions/pcl_conversions.h>
 
 ros_recognizer::Local3dDescription
-ros_recognizer::Local3dDescriber::describe(const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
+ros_recognizer::Local3dDescriber::describe(const sensor_msgs::PointCloud2& cloud_msg)
 {
+  refresh_config();
   ros_recognizer::Local3dDescription description;
   {
     pcl::ScopeTime timeit("CloudLoad");
-    pcl::fromROSMsg(*cloud_msg, *description.input_);
+    pcl::fromROSMsg(cloud_msg, *description.input_);
   }
   std::cout << "Data count: " << description.input_->size() << std::endl;
 
-  auto normals_loaded = std::any_of(std::begin(cloud_msg->fields), std::end(cloud_msg->fields),
+  auto normals_loaded = std::any_of(std::begin(cloud_msg.fields), std::end(cloud_msg.fields),
                                     [](const sensor_msgs::PointField& field)
                                     { return field.name == "normal_x"; });
   if(normals_loaded)
-    pcl::fromROSMsg(*cloud_msg, *description.normals_);
+    pcl::fromROSMsg(cloud_msg, *description.normals_);
   else
     computeNormals(description);
 

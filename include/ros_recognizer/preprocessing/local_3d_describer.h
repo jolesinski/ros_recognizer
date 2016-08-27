@@ -13,7 +13,7 @@ namespace ros_recognizer
 class Local3dDescriber : public Reconfigurable<DescriberConfig>
 {
 public:
-  Local3dDescription describe(const sensor_msgs::PointCloud2ConstPtr& cloud_msg);
+  Local3dDescription describe(const sensor_msgs::PointCloud2& cloud_msg);
 
 private:
   void computeNormals(Local3dDescription& data);
