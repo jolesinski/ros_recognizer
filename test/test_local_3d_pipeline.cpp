@@ -134,12 +134,19 @@ TEST_F (Local3dPipeline, singleInstanceVerification)
   auto hypotheses = matcher.match(model_description, scene_description);
 
   ros_recognizer::Verifier verifier;
-  hypotheses = verifier.refine(hypotheses, model_description.input_, scene_description.input_);
-  auto instances = verifier.verify(hypotheses, scene_description.input_);
-  ASSERT_EQ(instances.size(), 1);
+  hypotheses = verifier.verify(hypotheses, scene_description.input_);
+
+  auto idx = 0u;
+  for(const auto& hyp : hypotheses)
+    if (hyp.is_valid_)
+      std::cout << "Instance " << idx++ << " is GOOD! <---" << std::endl;
+    else
+      std::cout << "Instance " << idx++ << " is bad!" << std::endl;
+
+  ASSERT_EQ(hypotheses.size(), 1);
 
   float translation_error = (ground_truth_pose->block(0,3,3,1)
-                             - instances.front().pose_.block(0,3,3,1)).norm();
+                             - hypotheses.front().pose_.block(0,3,3,1)).norm();
   EXPECT_LE(translation_error, 0.01);
 }
 

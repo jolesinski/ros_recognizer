@@ -96,6 +96,7 @@ ros_recognizer::LocalMatcher::groupCorrespondences(const ros_recognizer::Local3d
   {
     Hypothesis hyp;
     hyp.pose_ = pose;
+    hyp.input_model_ = model.input_;
     hypotheses.push_back(hyp);
   }
   return hypotheses;

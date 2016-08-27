@@ -12,11 +12,10 @@ namespace ros_recognizer
 class Verifier : public Reconfigurable<VerifierConfig>
 {
 public:
-  Hypotheses verify(const ros_recognizer::Hypotheses& hyps,
+  Hypotheses verify(const ros_recognizer::Hypotheses& refined_hyps,
                     const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr& scene);
-
+private:
   Hypotheses refine(const ros_recognizer::Hypotheses& hyps,
-                    const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr& model,
                     const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr& scene);
 };
 
