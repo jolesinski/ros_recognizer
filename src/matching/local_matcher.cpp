@@ -11,7 +11,6 @@ ros_recognizer::Hypotheses
 ros_recognizer::LocalMatcher::match(const ros_recognizer::Local3dDescription& model,
                                                                const ros_recognizer::Local3dDescription& scene)
 {
-  refresh_config();
   auto corrs = findCorrespondences(model, scene);
   std::cout << "Correspondences found: " << corrs->size() << std::endl;
   return groupCorrespondences(model, scene, corrs);

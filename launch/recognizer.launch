@@ -3,4 +3,5 @@
           args="standalone ros_recognizer::Recognizer" output="screen">
         <param name="model_path" type="string" value="$(find ros_recognizer)/test/data/model.pcd"/>
     </node>
+    <node name="params_gui" pkg="rqt_reconfigure" type="rqt_reconfigure"/>
 </launch>

@@ -10,7 +10,6 @@
 ros_recognizer::Local3dDescription
 ros_recognizer::Local3dDescriber::describe(const sensor_msgs::PointCloud2& cloud_msg)
 {
-  refresh_config();
   ros_recognizer::Local3dDescription description;
   {
     pcl::ScopeTime timeit("CloudLoad");
