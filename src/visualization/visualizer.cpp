@@ -2,15 +2,32 @@
 #include <ros_recognizer/visualization/visualizer.h>
 #include <pcl/common/transforms.h>
 
-void ros_recognizer::Visualizer::showModel(const ros_recognizer::Local3dDescription& model)
+ros_recognizer::Visualizer::Visualizer() : vis_("ros_recognizer_visualizer")
 {
-  auto off_scene_model = shiftModel(model);
-  showDescription(off_scene_model, "model");
+  vis_.setBackgroundColor (0.1, 0.1, 0.1);
+  vis_.addCoordinateSystem (0.2);
+  vis_.initCameraParameters ();
+  vis_.resetCamera();
 }
 
-void ros_recognizer::Visualizer::showScene(const ros_recognizer::Local3dDescription& scene)
+void ros_recognizer::Visualizer::setModel(const ros_recognizer::Local3dDescription& model)
 {
-  showDescription(scene, "scene");
+  model_ = shiftModel(model);
+}
+
+void ros_recognizer::Visualizer::setScene(const ros_recognizer::Local3dDescription& scene)
+{
+  scene_ = scene;
+}
+
+void ros_recognizer::Visualizer::render()
+{
+  if (cfg_.show_model)
+    showDescription(model_, "model");
+  if (cfg_.show_scene)
+    showDescription(scene_, "scene");
+
+  vis_.spinOnce(SPIN_MS);
 }
 
 void ros_recognizer::Visualizer::showDescription(const ros_recognizer::Local3dDescription& descr,
@@ -25,8 +42,12 @@ void ros_recognizer::Visualizer::showInput(const pcl::PointCloud<pcl::PointXYZRG
                                            const std::string& id)
 {
   vis_.removePointCloud(id);
-  pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGBA> colorInput(cloud);
-  vis_.addPointCloud(cloud, colorInput, id);
+
+  if(cloud != nullptr)
+  {
+    pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGBA> colorInput(cloud);
+    vis_.addPointCloud(cloud, colorInput, id);
+  }
 }
 
 void ros_recognizer::Visualizer::showNormals(const pcl::PointCloud<pcl::PointXYZRGBA>::Ptr& input,
@@ -34,16 +55,24 @@ void ros_recognizer::Visualizer::showNormals(const pcl::PointCloud<pcl::PointXYZ
                                              const std::string& id)
 {
   vis_.removePointCloud("normals");
-  vis_.addPointCloudNormals<pcl::PointXYZRGBA, pcl::Normal>(input, normals, 10, 0.02, "normals");
+
+  if(input != nullptr && normals != nullptr && cfg_.show_normals)
+  {
+    vis_.addPointCloudNormals<pcl::PointXYZRGBA, pcl::Normal>(input, normals, 10, 0.02, "normals");
+  }
 }
 
 void ros_recognizer::Visualizer::showKeypoints(const pcl::PointCloud<pcl::PointXYZRGBA>::Ptr& cloud,
                                                const std::string& id)
 {
   vis_.removePointCloud(id);
-  pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGBA> colorKeypoints(cloud, 255, 0, 0);
-  vis_.addPointCloud(cloud, colorKeypoints, id);
-  vis_.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 4, id);
+
+  if(cloud != nullptr && cfg_.show_keypoints)
+  {
+    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGBA> colorKeypoints(cloud, 255, 0, 0);
+    vis_.addPointCloud(cloud, colorKeypoints, id);
+    vis_.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 4, id);
+  }
 }
 
 ros_recognizer::Local3dDescription

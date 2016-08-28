@@ -14,10 +14,17 @@ namespace ros_recognizer
 class Visualizer : public Reconfigurable<VisualizerConfig>
 {
 public:
-  void showModel(const Local3dDescription& model);
-  void showScene(const Local3dDescription& scene);
+  static constexpr auto SPIN_MS = 100;
+
+  Visualizer();
+
+  void setModel(const Local3dDescription& model);
+  void setScene(const Local3dDescription& scene);
+
+  void render();
 
 private:
+  Local3dDescription model_, scene_;
   pcl::visualization::PCLVisualizer vis_;
 
   void showDescription(const ros_recognizer::Local3dDescription& descr,
