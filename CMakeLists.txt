@@ -30,6 +30,7 @@ generate_dynamic_reconfigure_options(
   cfg/local_3d_describer.cfg
   cfg/local_matcher.cfg
   cfg/verifier.cfg
+  cfg/visualizer.cfg
 )
 
 add_service_files(
@@ -92,6 +93,15 @@ target_link_libraries(ros_recognizer_verification
     ${PCL_LIBRARIES}
 )
 add_dependencies(ros_recognizer_verification ${PROJECT_NAME}_gencfg)
+
+add_library(ros_recognizer_visualization
+    src/visualization/visualizer.cpp
+)
+target_link_libraries(ros_recognizer_visualization
+    ${catkin_LIBRARIES}
+    ${PCL_LIBRARIES}
+)
+add_dependencies(ros_recognizer_visualization ${PROJECT_NAME}_gencfg)
 
 add_library(ros_recognizer_nodelet src/nodelet/recognizer.cpp)
 target_link_libraries(ros_recognizer_nodelet
