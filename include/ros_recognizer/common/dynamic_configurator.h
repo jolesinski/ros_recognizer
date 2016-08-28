@@ -13,10 +13,16 @@ class DynamicConfigurator
 public:
   DynamicConfigurator(const std::string& ns);
 
-  void refresh(ReconfigurableType& cfg_receiver)
+  bool refresh(ReconfigurableType& cfg_receiver)
   {
     if(needs_refresh_)
+    {
       cfg_receiver.reconfigure(fresh_cfg_);
+      needs_refresh_ = false;
+      return true;
+    }
+
+    return false;
   };
 protected:
   using Cfg = typename ReconfigurableType::Cfg;
