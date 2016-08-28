@@ -103,11 +103,15 @@ target_link_libraries(ros_recognizer_visualization
 )
 add_dependencies(ros_recognizer_visualization ${PROJECT_NAME}_gencfg)
 
-add_library(ros_recognizer_nodelet src/nodelet/recognizer.cpp)
-target_link_libraries(ros_recognizer_nodelet
+add_library(ros_recognizer_nodelets
+    src/nodelet/recognizer.cpp
+    src/nodelet/viewer.cpp
+)
+target_link_libraries(ros_recognizer_nodelets
     ros_recognizer_preprocessing
     ros_recognizer_matching
     ros_recognizer_verification
+    ros_recognizer_visualization
     ${PCL_LIBRARIES}
     ${catkin_LIBRARIES}
 )
