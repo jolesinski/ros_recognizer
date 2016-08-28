@@ -16,16 +16,18 @@ class Visualizer : public Reconfigurable<VisualizerConfig>
 public:
   static constexpr auto SPIN_MS = 100;
 
-  Visualizer();
-
   void setModel(const Local3dDescription& model);
   void setScene(const Local3dDescription& scene);
 
-  void render();
+  void render(bool needs_redrawal);
 
 private:
   Local3dDescription model_, scene_;
-  pcl::visualization::PCLVisualizer vis_;
+  bool model_updated_ = false, scene_updated_ = false;
+  std::unique_ptr<pcl::visualization::PCLVisualizer> vis_;
+
+  // Delayed vis initialization, nodelet will mess this up in onInit
+  void initVis();
 
   void showDescription(const ros_recognizer::Local3dDescription& descr,
                        const std::string& id_prefix);
