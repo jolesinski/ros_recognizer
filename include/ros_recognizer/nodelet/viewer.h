@@ -7,6 +7,7 @@
 #include <ros/ros.h>
 #include <ros_recognizer/common/dynamic_configurator.h>
 #include <ros_recognizer/visualization/visualizer.h>
+#include <ros_recognizer/preprocessing/description_to_ros.h>
 
 namespace ros_recognizer
 {
@@ -24,6 +25,12 @@ private:
 
   ros::Timer spinTimer;
   void spinTimerCb(const ros::TimerEvent& event);
+
+  // Input
+  DescriptionSubscriber model_subscriber_;
+  DescriptionSubscriber scene_subscriber_;
+
+  void initTopics();
 };
 
 }

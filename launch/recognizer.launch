@@ -1,7 +1,14 @@
 <launch>
     <node pkg="nodelet" type="nodelet" name="ros_recognizer_mgr"  args="manager" output="screen"/>
     <node pkg="nodelet" type="nodelet" name="ros_recognizer_viewer"
-          args="load ros_recognizer::Viewer ros_recognizer_mgr" output="screen"/>
+          args="load ros_recognizer::Viewer ros_recognizer_mgr" output="screen">
+        <remap from="/ros_recognizer_viewer/model_input" to="/ros_recognizer/model_input" />
+        <remap from="/ros_recognizer_viewer/model_normals" to="/ros_recognizer/model_normals" />
+        <remap from="/ros_recognizer_viewer/model_keypoints" to="/ros_recognizer/model_keypoints" />
+        <remap from="/ros_recognizer_viewer/scene_input" to="/ros_recognizer/scene_input" />
+        <remap from="/ros_recognizer_viewer/scene_normals" to="/ros_recognizer/scene_normals" />
+        <remap from="/ros_recognizer_viewer/scene_keypoints" to="/ros_recognizer/scene_keypoints" />
+    </node>
     <node pkg="nodelet" type="nodelet" name="ros_recognizer"
           args="load ros_recognizer::Recognizer ros_recognizer_mgr" output="screen">
         <param name="model_path" type="string" value="$(find ros_recognizer)/test/data/model.pcd"/>
