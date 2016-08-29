@@ -11,6 +11,7 @@
 #include <ros_recognizer/preprocessing/local_3d_describer.h>
 #include <ros_recognizer/matching/local_matcher.h>
 #include <ros_recognizer/verification/verifier.h>
+#include <ros_recognizer/preprocessing/description_to_ros.h>
 
 namespace ros_recognizer
 {
@@ -18,7 +19,6 @@ namespace ros_recognizer
 class Recognizer : public nodelet::Nodelet
 {
 public:
-  //TODO: publisher for each step
   virtual void onInit();
 
   void sceneCallback(const sensor_msgs::PointCloud2ConstPtr& scene_msg);
@@ -30,9 +30,14 @@ public:
 private:
   ros::NodeHandle node_handle_;
 
+  // Input
   ros::Subscriber scene_subscriber_;
   ros::ServiceServer model_cloud_service_;
   ros::ServiceServer model_pcd_service_;
+
+  // Output
+  DescriptionPublisher scene_publisher_;
+  DescriptionPublisher model_publisher_;
 
   Local3dDescriber desciber;
   std::unique_ptr<DynamicConfigurator<Local3dDescriber>> describer_cfg;

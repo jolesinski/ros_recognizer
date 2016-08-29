@@ -9,19 +9,22 @@ void ros_recognizer::Recognizer::onInit()
   NODELET_INFO("Initializing recognizer...");
   node_handle_ = getMTPrivateNodeHandle();
 
+  pcl::console::setVerbosityLevel(pcl::console::L_ERROR);
   initCfg();
   initModel();
   initTopics();
-
-  NODELET_INFO("Initialization done!");
 }
 
 void ros_recognizer::Recognizer::sceneCallback(const sensor_msgs::PointCloud2ConstPtr& scene_msg)
 {
-  NODELET_INFO("Received scene cloud! Yippie!");
   refreshCfg();
 
   auto scene_description = desciber(*scene_msg);
+  scene_publisher_.publish(scene_description);
+  if(model_description.normals_->empty())
+    NODELET_ERROR("MODEL NORMALS ARE EMPTY!!");
+  model_publisher_.publish(model_description);
+
   auto hypotheses = matcher(model_description, scene_description);
   hypotheses = verifier(hypotheses, scene_description.input_);
   auto instances = std::count_if(std::begin(hypotheses), std::end(hypotheses),
@@ -32,7 +35,6 @@ void ros_recognizer::Recognizer::sceneCallback(const sensor_msgs::PointCloud2Con
 bool ros_recognizer::Recognizer::setModelFromCloud(ros_recognizer::set_model_from_cloud::Request& request,
                                                    ros_recognizer::set_model_from_cloud::Response& response)
 {
-  NODELET_INFO("Received new model cloud! Yayey!");
   refreshCfg();
 
   model_description = desciber(request.model_cloud);
@@ -44,7 +46,6 @@ bool ros_recognizer::Recognizer::setModelFromPCD(ros_recognizer::set_model_from_
                                                  ros_recognizer::set_model_from_pcd::Response& response)
 {
   //TODO: add rostest
-  NODELET_INFO("Received new model pcd path! Yahoo!");
   refreshCfg();
 
   sensor_msgs::PointCloud2Ptr model_cloud;
@@ -59,7 +60,6 @@ bool ros_recognizer::Recognizer::setModelFromPCD(ros_recognizer::set_model_from_
   }
   model_description = desciber(*model_cloud);
 
-  NODELET_INFO("Loaded model from pcd! Yahoo!");
   return true;
 }
 
@@ -92,11 +92,16 @@ void ros_recognizer::Recognizer::initModel()
 
 void ros_recognizer::Recognizer::initTopics()
 {
+  // Input
   scene_subscriber_ = node_handle_.subscribe("scene", 1, &Recognizer::sceneCallback, this);
   model_cloud_service_ = node_handle_.advertiseService("set_model_from_cloud",
                                                        &Recognizer::setModelFromCloud, this);
   model_pcd_service_ = node_handle_.advertiseService("set_model_from_pcd",
                                                      &Recognizer::setModelFromPCD, this);
+
+  // Output
+  scene_publisher_.initTopics(node_handle_, "scene");
+  model_publisher_.initTopics(node_handle_, "model");
 }
 
 void ros_recognizer::Recognizer::refreshCfg()
