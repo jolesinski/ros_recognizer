@@ -1,6 +1,5 @@
-
 #include <ros_recognizer/nodelet/viewer.h>
-#include <pcl_ros/point_cloud.h>
+#include <ros_recognizer/conversions/hypotheses_ros.h>
 #include <pluginlib/class_list_macros.h>
 
 void ros_recognizer::Viewer::onInit()
@@ -30,6 +29,23 @@ void ros_recognizer::Viewer::initTopics()
 {
   model_subscriber_.initTopics(node_handle_, "model");
   scene_subscriber_.initTopics(node_handle_, "scene");
+
+  valid_hyps_sub = node_handle_.subscribe("valid_hyps", 1, &Viewer::setValidHyps, this);
+  false_hyps_sub = node_handle_.subscribe("false_hyps", 1, &Viewer::setFalseHyps, this);
+}
+
+void ros_recognizer::Viewer::setValidHyps(const geometry_msgs::PoseArrayPtr msg)
+{
+  Hypotheses hyps = convertMsgToHypotheses(*msg, model_subscriber_.getDescription().input_, true);
+  NODELET_INFO("Received true hyps: %lu %lu", msg->poses.size(), hyps.size());
+  visualizer_.setHypotheses(hyps, true);
+}
+
+void ros_recognizer::Viewer::setFalseHyps(const geometry_msgs::PoseArrayPtr msg)
+{
+  Hypotheses hyps = convertMsgToHypotheses(*msg, model_subscriber_.getDescription().input_, false);
+  NODELET_INFO("Received false hyps: %lu %lu", msg->poses.size(), hyps.size());
+  visualizer_.setHypotheses(hyps, false);
 }
 
 PLUGINLIB_EXPORT_CLASS(ros_recognizer::Viewer, nodelet::Nodelet)

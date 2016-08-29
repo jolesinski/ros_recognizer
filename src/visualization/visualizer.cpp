@@ -15,31 +15,53 @@ void ros_recognizer::Visualizer::initVis()
 void ros_recognizer::Visualizer::setModel(const ros_recognizer::Local3dDescription& model)
 {
   model_ = shiftModel(model);
-  model_updated_ = true;
+  true_hypotheses_.clear();
+  false_hypotheses_.clear();
+  needs_redrawal_ = true;
 }
 
 void ros_recognizer::Visualizer::setScene(const ros_recognizer::Local3dDescription& scene)
 {
   scene_ = scene;
-  scene_updated_ = true;
+  true_hypotheses_.clear();
+  false_hypotheses_.clear();
+  needs_redrawal_ = true;
 }
 
-void ros_recognizer::Visualizer::render(bool needs_redrawal)
+void ros_recognizer::Visualizer::setHypotheses(const ros_recognizer::Hypotheses& hyps, bool valid)
+{
+  if (valid)
+    true_hypotheses_ = hyps;
+  else
+    false_hypotheses_ = hyps;
+  PCL_ERROR("Setting %s hyps %lu %lu\n",
+            valid ? "true" : "false",
+            hyps.size(),
+            valid ? true_hypotheses_.size() : false_hypotheses_.size());
+  needs_redrawal_ = true;
+}
+
+
+void ros_recognizer::Visualizer::render(bool force_redrawal)
 {
   if(vis_ == nullptr)
     initVis();
 
-  if (cfg_.show_model && (model_updated_ || needs_redrawal))
+  if(needs_redrawal_ || force_redrawal)
   {
-    showDescription(model_, "model");
-    model_updated_ = false;
-  }
-  if (cfg_.show_scene && (scene_updated_ || needs_redrawal))
-  {
-    showDescription(scene_, "scene");
-    scene_updated_ = false;
+    vis_->removeAllPointClouds();
+
+    if (cfg_.show_model)
+      showDescription(model_, "model");
+    if (cfg_.show_scene)
+      showDescription(scene_, "scene");
+    if (cfg_.show_true_hypotheses)
+      showHypotheses(true_hypotheses_, true);
+    if (cfg_.show_false_hypotheses)
+      showHypotheses(false_hypotheses_, false);
   }
 
+  needs_redrawal_ = false;
   vis_->spinOnce(SPIN_MS);
 }
 
@@ -54,8 +76,6 @@ void ros_recognizer::Visualizer::showDescription(const ros_recognizer::Local3dDe
 void ros_recognizer::Visualizer::showInput(const pcl::PointCloud<pcl::PointXYZRGBA>::Ptr& cloud,
                                            const std::string& id)
 {
-  vis_->removePointCloud(id);
-
   if(!cloud->empty())
   {
     pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGBA> colorInput(cloud);
@@ -67,8 +87,6 @@ void ros_recognizer::Visualizer::showNormals(const pcl::PointCloud<pcl::PointXYZ
                                              const pcl::PointCloud<pcl::Normal>::Ptr& normals,
                                              const std::string& id)
 {
-  vis_->removePointCloud(id);
-
   if(!input->empty() && !normals->empty() && cfg_.show_normals)
     vis_->addPointCloudNormals<pcl::PointXYZRGBA, pcl::Normal>(input, normals, 10, 0.02, id);
 }
@@ -76,13 +94,11 @@ void ros_recognizer::Visualizer::showNormals(const pcl::PointCloud<pcl::PointXYZ
 void ros_recognizer::Visualizer::showKeypoints(const pcl::PointCloud<pcl::PointXYZRGBA>::Ptr& cloud,
                                                const std::string& id)
 {
-  vis_->removePointCloud(id);
-
   if(!cloud->empty() && cfg_.show_keypoints)
   {
-    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGBA> colorKeypoints(cloud, 255, 0, 0);
+    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGBA> colorKeypoints(cloud, 126, 0, 255);
     vis_->addPointCloud(cloud, colorKeypoints, id);
-    vis_->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 4, id);
+    vis_->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 6, id);
   }
 }
 
@@ -114,4 +130,17 @@ ros_recognizer::Visualizer::shiftModel(const ros_recognizer::Local3dDescription&
   off_scene_descr.ref_frames_ = model.ref_frames_;
 
   return off_scene_descr;
+}
+
+void ros_recognizer::Visualizer::showHypotheses(const ros_recognizer::Hypotheses& hypotheses, bool valid)
+{
+  auto cnt = 0u;
+  for(const auto& hyp : hypotheses)
+  {
+    using colorHandler = pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGBA>;
+    auto color = valid ? colorHandler(hyp.registered_model_, 0, 255, 0)
+                       : colorHandler(hyp.registered_model_, 255, 0, 0);
+    std::string id = valid ? "true_hyps_" : "false_hyps_";
+    vis_->addPointCloud(hyp.registered_model_, color, id + std::to_string(cnt++));
+  }
 }

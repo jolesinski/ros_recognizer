@@ -4,6 +4,7 @@
 
 #include <ros_recognizer/common/reconfigurable.h>
 #include <ros_recognizer/preprocessing/local_3d_description.h>
+#include <ros_recognizer/matching/hypotheses.h>
 #include <ros_recognizer/VisualizerConfig.h>
 
 #include <pcl/visualization/pcl_visualizer.h>
@@ -18,12 +19,14 @@ public:
 
   void setModel(const Local3dDescription& model);
   void setScene(const Local3dDescription& scene);
+  void setHypotheses(const Hypotheses& hyps, bool valid);
 
-  void render(bool needs_redrawal);
+  void render(bool force_redrawal);
 
 private:
   Local3dDescription model_, scene_;
-  bool model_updated_ = false, scene_updated_ = false;
+  Hypotheses true_hypotheses_, false_hypotheses_;
+  bool needs_redrawal_ = false;
   std::unique_ptr<pcl::visualization::PCLVisualizer> vis_;
 
   // Delayed vis initialization, nodelet will mess this up in onInit
@@ -39,6 +42,7 @@ private:
                    const std::string& id);
   void showKeypoints(const pcl::PointCloud<pcl::PointXYZRGBA>::Ptr& cloud,
                      const std::string &id);
+  void showHypotheses(const Hypotheses& hypotheses, bool valid);
 
   Local3dDescription shiftModel(const Local3dDescription& model);
 };

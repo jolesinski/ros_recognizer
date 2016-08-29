@@ -3,11 +3,12 @@
 #define ROS_RECOGNIZER_VIEWER_H
 
 #include <nodelet/nodelet.h>
+#include <geometry_msgs/PoseArray.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <ros/ros.h>
 #include <ros_recognizer/common/dynamic_configurator.h>
 #include <ros_recognizer/visualization/visualizer.h>
-#include <ros_recognizer/preprocessing/description_to_ros.h>
+#include <ros_recognizer/conversions/description_ros.h>
 
 namespace ros_recognizer
 {
@@ -29,8 +30,12 @@ private:
   // Input
   DescriptionSubscriber model_subscriber_;
   DescriptionSubscriber scene_subscriber_;
+  ros::Subscriber valid_hyps_sub;
+  ros::Subscriber false_hyps_sub;
 
   void initTopics();
+  void setValidHyps(const geometry_msgs::PoseArrayPtr msg);
+  void setFalseHyps(const geometry_msgs::PoseArrayPtr msg);
 };
 
 }
