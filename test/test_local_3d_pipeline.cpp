@@ -118,7 +118,9 @@ TEST_F (Local3dPipeline, localMatcher)
   auto scene_description = describer(*scene_with_single_model_input);
 
   ros_recognizer::LocalMatcher matcher;
-  auto hypotheses = matcher(model_description, scene_description);
+  pcl::CorrespondencesPtr correspondences;
+  std::vector<pcl::Correspondences> clusters;
+  auto hypotheses = matcher(model_description, scene_description, correspondences, clusters);
   EXPECT_GT(hypotheses.size(), 0);
   std::cout << "Hypotheses: " << hypotheses.size() << std::endl;
 }
@@ -131,10 +133,13 @@ TEST_F (Local3dPipeline, singleInstanceVerification)
   auto scene_description = describer(*scene_with_single_model_input);
 
   ros_recognizer::LocalMatcher matcher;
-  auto hypotheses = matcher(model_description, scene_description);
+  pcl::CorrespondencesPtr correspondences;
+  std::vector<pcl::Correspondences> clusters;
+  auto hypotheses = matcher(model_description, scene_description, correspondences, clusters);
 
   ros_recognizer::Verifier verifier;
   hypotheses = verifier(hypotheses, scene_description.input_);
+  std::cout << "VerifiedHypotheses: " << hypotheses.size() << std::endl;
   auto instances = std::count_if(std::begin(hypotheses), std::end(hypotheses),
                                  [](const ros_recognizer::Hypothesis& hyp)
                                  { return hyp.is_valid_; });

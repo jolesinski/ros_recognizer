@@ -14,7 +14,10 @@ namespace ros_recognizer
 class LocalMatcher : public Reconfigurable<MatcherConfig>
 {
 public:
-  Hypotheses operator()(const Local3dDescription& model, const Local3dDescription& scene);
+  Hypotheses operator()(const Local3dDescription& model,
+                        const Local3dDescription& scene,
+                        pcl::CorrespondencesPtr& correspondences ,
+                        std::vector<pcl::Correspondences>& clusters);
 
 private:
   pcl::CorrespondencesPtr findCorrespondences(const Local3dDescription& model,
@@ -22,7 +25,8 @@ private:
 
   ros_recognizer::Hypotheses groupCorrespondences(const Local3dDescription& model,
                                                   const Local3dDescription& scene,
-                                                  const pcl::CorrespondencesConstPtr& correspondences);
+                                                  const pcl::CorrespondencesConstPtr& correspondences,
+                                                  std::vector<pcl::Correspondences>& clusters);
 };
 
 }

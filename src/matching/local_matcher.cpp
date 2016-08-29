@@ -9,11 +9,13 @@
 
 ros_recognizer::Hypotheses
 ros_recognizer::LocalMatcher::operator()(const ros_recognizer::Local3dDescription& model,
-                                                               const ros_recognizer::Local3dDescription& scene)
+                                         const ros_recognizer::Local3dDescription& scene,
+                                         pcl::CorrespondencesPtr& correspondences,
+                                         std::vector<pcl::Correspondences>& clusters)
 {
-  auto corrs = findCorrespondences(model, scene);
-  std::cout << "Correspondences found: " << corrs->size() << std::endl;
-  return groupCorrespondences(model, scene, corrs);
+  correspondences = findCorrespondences(model, scene);
+  std::cout << "Correspondences found: " << correspondences->size() << std::endl;
+  return groupCorrespondences(model, scene, correspondences, clusters);
 }
 
 pcl::CorrespondencesPtr
@@ -70,7 +72,8 @@ ros_recognizer::LocalMatcher::findCorrespondences(const ros_recognizer::Local3dD
 ros_recognizer::Hypotheses
 ros_recognizer::LocalMatcher::groupCorrespondences(const ros_recognizer::Local3dDescription& model,
                                                    const ros_recognizer::Local3dDescription& scene,
-                                                   const pcl::CorrespondencesConstPtr& correspondences)
+                                                   const pcl::CorrespondencesConstPtr& correspondences,
+                                                   std::vector<pcl::Correspondences>& clusters)
 {
   pcl::ScopeTime timeit("Clustering");
 
@@ -88,7 +91,7 @@ ros_recognizer::LocalMatcher::groupCorrespondences(const ros_recognizer::Local3d
   clusterer.setModelSceneCorrespondences (correspondences);
 
   Poses poses;
-  clusterer.recognize(poses);
+  clusterer.recognize(poses, clusters);
 
   ros_recognizer::Hypotheses hypotheses;
   for (const Pose& pose : poses)
