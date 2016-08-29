@@ -71,7 +71,6 @@ private:
   void setNormals(const pcl::PointCloud<pcl::Normal>::Ptr msg)
   {
     has_new_data_ = true;
-    PCL_ERROR("NORMALS ARRIVED");
     description_.normals_ = msg;
   }
 

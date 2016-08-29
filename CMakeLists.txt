@@ -35,14 +35,25 @@ generate_dynamic_reconfigure_options(
   cfg/visualizer.cfg
 )
 
+add_message_files(
+  DIRECTORY
+    msg
+  FILES
+    CorrespondenceClusters.msg
+    CorrespondenceArray.msg
+    Correspondence.msg
+)
+
 add_service_files(
-    FILES
+  DIRECTORY
+    srv
+  FILES
     set_model_from_cloud.srv
     set_model_from_pcd.srv
 )
 
 generate_messages(
-    DEPENDENCIES
+  DEPENDENCIES
     std_msgs
     sensor_msgs
 )

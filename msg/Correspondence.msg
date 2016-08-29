@@ -1,0 +1,3 @@
+int32 index_query
+int32 index_match
+float64 distance
