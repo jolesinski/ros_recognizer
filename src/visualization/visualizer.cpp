@@ -40,7 +40,7 @@ void ros_recognizer::Visualizer::render(bool needs_redrawal)
     scene_updated_ = false;
   }
 
-  vis_->spinOnce(SPIN_MS, true);
+  vis_->spinOnce(SPIN_MS);
 }
 
 void ros_recognizer::Visualizer::showDescription(const ros_recognizer::Local3dDescription& descr,
@@ -58,7 +58,6 @@ void ros_recognizer::Visualizer::showInput(const pcl::PointCloud<pcl::PointXYZRG
 
   if(!cloud->empty())
   {
-    PCL_ERROR("DEBUG1\n");
     pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGBA> colorInput(cloud);
     vis_->addPointCloud(cloud, colorInput, id);
   }
@@ -68,12 +67,10 @@ void ros_recognizer::Visualizer::showNormals(const pcl::PointCloud<pcl::PointXYZ
                                              const pcl::PointCloud<pcl::Normal>::Ptr& normals,
                                              const std::string& id)
 {
-  vis_->removePointCloud("normals");
+  vis_->removePointCloud(id);
 
   if(!input->empty() && !normals->empty() && cfg_.show_normals)
-  {
-    vis_->addPointCloudNormals<pcl::PointXYZRGBA, pcl::Normal>(input, normals, 10, 0.02, "normals");
-  }
+    vis_->addPointCloudNormals<pcl::PointXYZRGBA, pcl::Normal>(input, normals, 10, 0.02, id);
 }
 
 void ros_recognizer::Visualizer::showKeypoints(const pcl::PointCloud<pcl::PointXYZRGBA>::Ptr& cloud,
@@ -94,6 +91,10 @@ ros_recognizer::Visualizer::shiftModel(const ros_recognizer::Local3dDescription&
 {
   ros_recognizer::Local3dDescription off_scene_descr;
 
+  pcl::PointCloud<pcl::PointNormal> off_scene_pointNormals;
+  pcl::copyPointCloud(*model.input_, off_scene_pointNormals);
+  pcl::copyPointCloud(*model.normals_, off_scene_pointNormals);
+
   pcl::transformPointCloud (*model.input_,
                             *off_scene_descr.input_,
                             Eigen::Vector3f(-.5,0,0),
@@ -102,8 +103,13 @@ ros_recognizer::Visualizer::shiftModel(const ros_recognizer::Local3dDescription&
                             *off_scene_descr.keypoints_,
                             Eigen::Vector3f (-.5,0,0),
                             Eigen::Quaternionf (0.5, 0, 0.86603, 0));
+  pcl::transformPointCloudWithNormals(off_scene_pointNormals,
+                                      off_scene_pointNormals,
+                                      Eigen::Vector3f (-.5,0,0),
+                                      Eigen::Quaternionf (0.5, 0, 0.86603, 0));
 
-  off_scene_descr.normals_ = model.normals_;
+  pcl::copyPointCloud(off_scene_pointNormals, *off_scene_descr.normals_);
+
   off_scene_descr.descriptors_ = model.descriptors_;
   off_scene_descr.ref_frames_ = model.ref_frames_;
 
