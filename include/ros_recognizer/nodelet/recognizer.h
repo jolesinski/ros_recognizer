@@ -10,7 +10,7 @@
 #include <ros_recognizer/set_model_from_cloud.h>
 #include <ros_recognizer/set_model_from_pcd.h>
 #include <ros_recognizer/preprocessing/local_3d_describer.h>
-#include <ros_recognizer/preprocessing/description_to_ros.h>
+#include <ros_recognizer/conversions/description_ros.h>
 #include <ros_recognizer/matching/local_matcher.h>
 #include <ros_recognizer/verification/verifier.h>
 
@@ -39,6 +39,8 @@ private:
   // Output
   DescriptionPublisher scene_publisher_;
   DescriptionPublisher model_publisher_;
+  ros::Publisher correspondences_publisher;
+  ros::Publisher clusters_publisher;
   ros::Publisher valid_hyps_publisher;
   ros::Publisher false_hyps_publisher;
 

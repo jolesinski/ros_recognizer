@@ -8,6 +8,10 @@
         <remap from="/ros_recognizer_viewer/scene_input" to="/ros_recognizer/scene_input" />
         <remap from="/ros_recognizer_viewer/scene_normals" to="/ros_recognizer/scene_normals" />
         <remap from="/ros_recognizer_viewer/scene_keypoints" to="/ros_recognizer/scene_keypoints" />
+        <remap from="/ros_recognizer_viewer/clusters" to="/ros_recognizer/clusters" />
+        <remap from="/ros_recognizer_viewer/correspondences" to="/ros_recognizer/correspondences" />
+        <remap from="/ros_recognizer_viewer/valid_hyps" to="/ros_recognizer/valid_hyps" />
+        <remap from="/ros_recognizer_viewer/false_hyps" to="/ros_recognizer/false_hyps" />
     </node>
     <node pkg="nodelet" type="nodelet" name="ros_recognizer"
           args="load ros_recognizer::Recognizer ros_recognizer_mgr" output="screen">
