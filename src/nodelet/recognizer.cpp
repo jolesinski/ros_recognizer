@@ -2,6 +2,7 @@
 
 #include <pcl/io/pcd_io.h>
 #include <pcl_conversions/pcl_conversions.h>
+#include <eigen_conversions/eigen_msg.h>
 #include <pluginlib/class_list_macros.h>
 
 void ros_recognizer::Recognizer::onInit()
@@ -27,9 +28,11 @@ void ros_recognizer::Recognizer::sceneCallback(const sensor_msgs::PointCloud2Con
 
   auto hypotheses = matcher(model_description, scene_description);
   hypotheses = verifier(hypotheses, scene_description.input_);
-  auto instances = std::count_if(std::begin(hypotheses), std::end(hypotheses),
+  auto instances_cnt = std::count_if(std::begin(hypotheses), std::end(hypotheses),
                                 [](const Hypothesis& hyp) { return hyp.is_valid_; });
-  NODELET_INFO("Found %ld instances out of %lu hypotheses", instances, hypotheses.size());
+  NODELET_INFO("Found %ld instances out of %lu hypotheses", instances_cnt, hypotheses.size());
+
+  publishResults(hypotheses);
 }
 
 bool ros_recognizer::Recognizer::setModelFromCloud(ros_recognizer::set_model_from_cloud::Request& request,
@@ -98,10 +101,11 @@ void ros_recognizer::Recognizer::initTopics()
                                                        &Recognizer::setModelFromCloud, this);
   model_pcd_service_ = node_handle_.advertiseService("set_model_from_pcd",
                                                      &Recognizer::setModelFromPCD, this);
-
   // Output
   scene_publisher_.initTopics(node_handle_, "scene");
   model_publisher_.initTopics(node_handle_, "model");
+  valid_hyps_publisher = node_handle_.advertise<geometry_msgs::PoseArray>("valid_hyps", 1);
+  false_hyps_publisher = node_handle_.advertise<geometry_msgs::PoseArray>("false_hyps", 1);
 }
 
 void ros_recognizer::Recognizer::refreshCfg()
@@ -109,6 +113,26 @@ void ros_recognizer::Recognizer::refreshCfg()
   describer_cfg->refresh(desciber);
   matcher_cfg->refresh(matcher);
   verifier_cfg->refresh(verifier);
+}
+
+void ros_recognizer::Recognizer::publishResults(const ros_recognizer::Hypotheses& hyps)
+{
+  geometry_msgs::PoseArrayPtr valid_pose_array(new geometry_msgs::PoseArray);
+  geometry_msgs::PoseArrayPtr false_pose_array(new geometry_msgs::PoseArray);
+
+  for (const auto& hyp : hyps)
+  {
+    geometry_msgs::Pose pose;
+    Eigen::Affine3d affine(hyp.pose_.cast<double>());
+    tf::poseEigenToMsg(affine, pose);
+    if(hyp.is_valid_)
+      valid_pose_array->poses.push_back(pose);
+    else
+      false_pose_array->poses.push_back(pose);
+  }
+
+  valid_hyps_publisher.publish(valid_pose_array);
+  false_hyps_publisher.publish(false_pose_array);
 }
 
 PLUGINLIB_EXPORT_CLASS(ros_recognizer::Recognizer, nodelet::Nodelet)

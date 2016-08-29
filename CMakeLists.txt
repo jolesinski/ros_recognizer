@@ -15,6 +15,8 @@ find_package(catkin COMPONENTS
   sensor_msgs
   std_msgs
   message_generation
+  eigen_conversions
+  geometry_msgs
   REQUIRED
 )
 
@@ -58,6 +60,8 @@ catkin_package(
     rospy
     sensor_msgs
     std_msgs
+    eigen_conversions
+    geometry_msgs
 )
 
 include_directories(

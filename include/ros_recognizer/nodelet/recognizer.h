@@ -3,15 +3,16 @@
 #define ROS_RECOGNIZER_RECOGNIZER_H
 
 #include <nodelet/nodelet.h>
+#include <geometry_msgs/PoseArray.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <ros/ros.h>
 #include <ros_recognizer/common/dynamic_configurator.h>
 #include <ros_recognizer/set_model_from_cloud.h>
 #include <ros_recognizer/set_model_from_pcd.h>
 #include <ros_recognizer/preprocessing/local_3d_describer.h>
+#include <ros_recognizer/preprocessing/description_to_ros.h>
 #include <ros_recognizer/matching/local_matcher.h>
 #include <ros_recognizer/verification/verifier.h>
-#include <ros_recognizer/preprocessing/description_to_ros.h>
 
 namespace ros_recognizer
 {
@@ -38,6 +39,8 @@ private:
   // Output
   DescriptionPublisher scene_publisher_;
   DescriptionPublisher model_publisher_;
+  ros::Publisher valid_hyps_publisher;
+  ros::Publisher false_hyps_publisher;
 
   Local3dDescriber desciber;
   std::unique_ptr<DynamicConfigurator<Local3dDescriber>> describer_cfg;
@@ -57,6 +60,7 @@ private:
   sensor_msgs::PointCloud2Ptr loadPCD(const std::string& pcd_path);
 
   void refreshCfg();
+  void publishResults(const Hypotheses& hyps);
 };
 
 }
