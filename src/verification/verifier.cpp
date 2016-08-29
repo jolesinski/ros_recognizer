@@ -60,6 +60,18 @@ ros_recognizer::Verifier::refine(const ros_recognizer::Hypotheses& hyps,
   pcl::ScopeTime timeit("Refinement");
 
   Hypotheses refined_hyps;
+
+  if(!cfg_.icp_refinement)
+  {
+    for(auto hyp : hyps)
+    {
+      hyp.registered_model_.reset(new pcl::PointCloud<pcl::PointXYZRGBA>);
+      pcl::transformPointCloud(*hyp.input_model_, *hyp.registered_model_, hyp.pose_);
+      refined_hyps.push_back(hyp);
+    }
+    return refined_hyps;
+  }
+
   pcl::IterativeClosestPoint<pcl::PointXYZRGBA, pcl::PointXYZRGBA> icp;
   icp.setInputTarget(scene);
   icp.setMaxCorrespondenceDistance(cfg_.icp_corr_dist);
