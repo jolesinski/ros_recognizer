@@ -110,21 +110,6 @@ TEST_F (Local3dPipeline, sceneLocal3dDescriber)
             scene_description.descriptors_->size());
 }
 
-TEST_F (Local3dPipeline, localMatcher)
-{
-  pcl::console::setVerbosityLevel(pcl::console::L_ERROR);
-  ros_recognizer::Local3dDescriber describer;
-  auto model_description = describer(*model_input);
-  auto scene_description = describer(*scene_with_single_model_input);
-
-  ros_recognizer::LocalMatcher matcher;
-  pcl::CorrespondencesPtr correspondences;
-  std::vector<pcl::Correspondences> clusters;
-  auto hypotheses = matcher(model_description, scene_description, correspondences, clusters);
-  EXPECT_GT(hypotheses.size(), 0);
-  std::cout << "Hypotheses: " << hypotheses.size() << std::endl;
-}
-
 TEST_F (Local3dPipeline, singleInstanceVerification)
 {
   pcl::console::setVerbosityLevel(pcl::console::L_ERROR);
@@ -136,6 +121,8 @@ TEST_F (Local3dPipeline, singleInstanceVerification)
   pcl::CorrespondencesPtr correspondences;
   std::vector<pcl::Correspondences> clusters;
   auto hypotheses = matcher(model_description, scene_description, correspondences, clusters);
+  ASSERT_GT(hypotheses.size(), 0);
+  std::cout << "Hypotheses: " << hypotheses.size() << std::endl;
 
   ros_recognizer::Verifier verifier;
   hypotheses = verifier(hypotheses, scene_description.input_);
