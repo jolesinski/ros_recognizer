@@ -20,13 +20,13 @@ public:
                         std::vector<pcl::Correspondences>& clusters);
 
 private:
-  pcl::CorrespondencesPtr findCorrespondences(const Local3dDescription& model,
-                                              const Local3dDescription& scene);
+  pcl::CorrespondencesPtr match(const Local3dDescription& model,
+                                const Local3dDescription& scene);
 
-  ros_recognizer::Hypotheses groupCorrespondences(const Local3dDescription& model,
-                                                  const Local3dDescription& scene,
-                                                  const pcl::CorrespondencesConstPtr& correspondences,
-                                                  std::vector<pcl::Correspondences>& clusters);
+  ros_recognizer::Hypotheses clusterize(const Local3dDescription& model,
+                                        const Local3dDescription& scene,
+                                        const pcl::CorrespondencesConstPtr& correspondences,
+                                        std::vector<pcl::Correspondences>& clusters);
 };
 
 }

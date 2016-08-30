@@ -13,22 +13,23 @@ ros_recognizer::LocalMatcher::operator()(const ros_recognizer::Local3dDescriptio
                                          pcl::CorrespondencesPtr& correspondences,
                                          std::vector<pcl::Correspondences>& clusters)
 {
-  correspondences = findCorrespondences(model, scene);
-  std::cout << "Correspondences found: " << correspondences->size() << std::endl;
-  return groupCorrespondences(model, scene, correspondences, clusters);
+  correspondences = match(model, scene);
+  PCL_DEBUG("Matcher: Correspondences found: %lu", correspondences->size());
+  return clusterize(model, scene, correspondences, clusters);
 }
 
 pcl::CorrespondencesPtr
-ros_recognizer::LocalMatcher::findCorrespondences(const ros_recognizer::Local3dDescription& model,
-                                                  const ros_recognizer::Local3dDescription& scene)
+ros_recognizer::LocalMatcher::match(const ros_recognizer::Local3dDescription& model,
+                                    const ros_recognizer::Local3dDescription& scene)
 {
   pcl::ScopeTime timeit("Correspondences");
-  std::vector<pcl::Correspondences> per_point_corrs(scene.descriptors_->size());
+
   pcl::KdTreeFLANN<pcl::SHOT1344, ::flann::L1<float>> match_search;
   match_search.setInputCloud(model.descriptors_);
-  std::vector<int> neigh_indices(10);
-  std::vector<float> neigh_sqr_dists(10);
 
+  std::vector<pcl::Correspondences> per_point_corrs(scene.descriptors_->size());
+  std::vector<int> neigh_indices(cfg_.corr_max_neighs);
+  std::vector<float> neigh_sqr_dists(cfg_.corr_max_neighs);
   // For each scene keypoint descriptor, find nearest neighbor into the
   // model keypoints descriptor cloud and add it to the correspondences vector.
 #pragma omp parallel for shared (per_point_corrs) private (neigh_indices, neigh_sqr_dists) num_threads(8)
@@ -42,7 +43,7 @@ ros_recognizer::LocalMatcher::findCorrespondences(const ros_recognizer::Local3dD
         cfg_.corr_distance,
         neigh_indices,
         neigh_sqr_dists,
-        10
+        cfg_.corr_max_neighs
     );
 
     for(int corr_idx = 0; corr_idx < found_neighs; corr_idx++)
@@ -70,13 +71,14 @@ ros_recognizer::LocalMatcher::findCorrespondences(const ros_recognizer::Local3dD
 }
 
 ros_recognizer::Hypotheses
-ros_recognizer::LocalMatcher::groupCorrespondences(const ros_recognizer::Local3dDescription& model,
-                                                   const ros_recognizer::Local3dDescription& scene,
-                                                   const pcl::CorrespondencesConstPtr& correspondences,
-                                                   std::vector<pcl::Correspondences>& clusters)
+ros_recognizer::LocalMatcher::clusterize(const ros_recognizer::Local3dDescription& model,
+                                         const ros_recognizer::Local3dDescription& scene,
+                                         const pcl::CorrespondencesConstPtr& correspondences,
+                                         std::vector<pcl::Correspondences>& clusters)
 {
   pcl::ScopeTime timeit("Clustering");
 
+  //TODO: efficiency: train is called on first run
   //TODO: rewrite to use color (from v4r)
   pcl::Hough3DGrouping<pcl::PointXYZRGBA, pcl::PointXYZRGBA> clusterer;
   clusterer.setHoughBinSize (cfg_.cluster_size);
@@ -96,6 +98,14 @@ ros_recognizer::LocalMatcher::groupCorrespondences(const ros_recognizer::Local3d
   ros_recognizer::Hypotheses hypotheses;
   for (const Pose& pose : poses)
   {
+    // If RANSAC inside clusterer fails to estimate pose
+    // identity is returned. True identity is hardly posible.
+    if(pose == Eigen::Matrix4f::Identity())
+    {
+      PCL_DEBUG("Matcher: IDENTITY hipothesis");
+      continue;
+    }
+
     Hypothesis hyp;
     hyp.pose_ = pose;
     hyp.input_model_ = model.input_;
