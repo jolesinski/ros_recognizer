@@ -15,7 +15,7 @@ ros_recognizer::Local3dDescriber::operator()(const sensor_msgs::PointCloud2& clo
     pcl::ScopeTime timeit("CloudLoad");
     pcl::fromROSMsg(cloud_msg, *description.input_);
   }
-  PCL_DEBUG("Describer: Input data count: %lu\n", description.input_->size());
+  PCL_ERROR("Describer: Input data count: %lu\n", description.input_->size());
 
   auto normals_loaded = std::any_of(std::begin(cloud_msg.fields), std::end(cloud_msg.fields),
                                     [](const sensor_msgs::PointField& field)
@@ -27,7 +27,7 @@ ros_recognizer::Local3dDescriber::operator()(const sensor_msgs::PointCloud2& clo
 
   //computeResolution(description);
   computeKeypoints(description);
-  PCL_DEBUG("Describer: Selected keypoints: %lu", description.keypoints_->size());
+  PCL_ERROR("Describer: Selected keypoints: %lu\n", description.keypoints_->size());
   //computeRefFrames(description);
   computeDescriptors(description);
   return description;
@@ -39,7 +39,7 @@ void ros_recognizer::Local3dDescriber::computeNormals(ros_recognizer::Local3dDes
 
   if(cfg_.use_integral_image && data.input_->isOrganized())
   {
-    PCL_DEBUG("Describer: Input is organized\n");
+    PCL_ERROR("Describer: Input is organized\n");
     pcl::IntegralImageNormalEstimation<pcl::PointXYZRGBA, pcl::Normal> norm_est;
     norm_est.setNormalEstimationMethod(norm_est.AVERAGE_3D_GRADIENT);
     norm_est.setMaxDepthChangeFactor(cfg_.descr_rad);
@@ -51,7 +51,6 @@ void ros_recognizer::Local3dDescriber::computeNormals(ros_recognizer::Local3dDes
   }
   else
   {
-    PCL_DEBUG("Describer: Input is NOT organized\n");
     pcl::NormalEstimationOMP<pcl::PointXYZRGBA, pcl::Normal> norm_est(cfg_.omp_threads);
     norm_est.setRadiusSearch(cfg_.descr_rad);
     norm_est.setInputCloud(data.input_);

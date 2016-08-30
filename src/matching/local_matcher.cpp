@@ -14,7 +14,7 @@ ros_recognizer::LocalMatcher::operator()(const ros_recognizer::Local3dDescriptio
                                          std::vector<pcl::Correspondences>& clusters)
 {
   correspondences = match(model, scene);
-  PCL_DEBUG("Matcher: Correspondences found: %lu", correspondences->size());
+  PCL_ERROR("Matcher: Correspondences found: %lu\n", correspondences->size());
   return clusterize(model, scene, correspondences, clusters);
 }
 
@@ -102,7 +102,7 @@ ros_recognizer::LocalMatcher::clusterize(const ros_recognizer::Local3dDescriptio
     // identity is returned. True identity is hardly posible.
     if(pose == Eigen::Matrix4f::Identity())
     {
-      PCL_DEBUG("Matcher: IDENTITY hipothesis");
+      PCL_ERROR("Matcher: IDENTITY hipothesis\n");
       continue;
     }
 
