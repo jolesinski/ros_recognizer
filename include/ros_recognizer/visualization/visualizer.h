@@ -19,12 +19,16 @@ public:
 
   void setModel(const Local3dDescription& model);
   void setScene(const Local3dDescription& scene);
+  void setCorrespondences(const pcl::Correspondences& corrs);
+  void setClusters(const std::vector<pcl::Correspondences>& clusters);
   void setHypotheses(const Hypotheses& hyps, bool valid);
 
   void render(bool force_redrawal);
 
 private:
   Local3dDescription model_, scene_;
+  pcl::Correspondences corrs_;
+  std::vector<pcl::Correspondences> clusters_;
   Hypotheses true_hypotheses_, false_hypotheses_;
   bool needs_redrawal_ = false;
   std::unique_ptr<pcl::visualization::PCLVisualizer> vis_;
@@ -42,7 +46,9 @@ private:
                    const std::string& id);
   void showKeypoints(const pcl::PointCloud<pcl::PointXYZRGBA>::Ptr& cloud,
                      const std::string &id);
+  void showCorrespondences();
   void showHypotheses(const Hypotheses& hypotheses, bool valid);
+  void clearResults();
 
   Local3dDescription shiftModel(const Local3dDescription& model);
 };

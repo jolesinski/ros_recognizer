@@ -15,16 +15,26 @@ void ros_recognizer::Visualizer::initVis()
 void ros_recognizer::Visualizer::setModel(const ros_recognizer::Local3dDescription& model)
 {
   model_ = shiftModel(model);
-  true_hypotheses_.clear();
-  false_hypotheses_.clear();
+  clearResults();
   needs_redrawal_ = true;
 }
 
 void ros_recognizer::Visualizer::setScene(const ros_recognizer::Local3dDescription& scene)
 {
   scene_ = scene;
-  true_hypotheses_.clear();
-  false_hypotheses_.clear();
+  clearResults();
+  needs_redrawal_ = true;
+}
+
+void ros_recognizer::Visualizer::setCorrespondences(const pcl::Correspondences& corrs)
+{
+  corrs_ = corrs;
+  needs_redrawal_ = true;
+}
+
+void ros_recognizer::Visualizer::setClusters(const std::vector<pcl::Correspondences>& clusters)
+{
+  clusters_ = clusters;
   needs_redrawal_ = true;
 }
 
@@ -34,10 +44,6 @@ void ros_recognizer::Visualizer::setHypotheses(const ros_recognizer::Hypotheses&
     true_hypotheses_ = hyps;
   else
     false_hypotheses_ = hyps;
-  PCL_ERROR("Setting %s hyps %lu %lu\n",
-            valid ? "true" : "false",
-            hyps.size(),
-            valid ? true_hypotheses_.size() : false_hypotheses_.size());
   needs_redrawal_ = true;
 }
 
@@ -55,6 +61,8 @@ void ros_recognizer::Visualizer::render(bool force_redrawal)
       showDescription(model_, "model");
     if (cfg_.show_scene)
       showDescription(scene_, "scene");
+    if (cfg_.show_corrs)
+      showCorrespondences();
     if (cfg_.show_true_hypotheses)
       showHypotheses(true_hypotheses_, true);
     if (cfg_.show_false_hypotheses)
@@ -143,4 +151,39 @@ void ros_recognizer::Visualizer::showHypotheses(const ros_recognizer::Hypotheses
     std::string id = valid ? "true_hyps_" : "false_hyps_";
     vis_->addPointCloud(hyp.registered_model_, color, id + std::to_string(cnt++));
   }
+}
+
+void ros_recognizer::Visualizer::showCorrespondences()
+{
+  static const std::string prefix = "corresp_";
+  static auto cnt = 0u;
+
+  while (cnt)
+    vis_->removeCorrespondences(prefix + std::to_string(--cnt));
+
+  if (cfg_.show_clusters)
+  {
+    for(const auto& cluster : clusters_)
+    {
+      vis_->addCorrespondences<pcl::PointXYZRGBA>(model_.keypoints_,
+                                                  scene_.keypoints_,
+                                                  cluster,
+                                                  prefix + std::to_string(cnt++));
+    }
+  }
+  else
+  {
+    vis_->addCorrespondences<pcl::PointXYZRGBA>(model_.keypoints_,
+                                                scene_.keypoints_,
+                                                corrs_,
+                                                prefix + std::to_string(cnt++));
+  }
+}
+
+void ros_recognizer::Visualizer::clearResults()
+{
+  true_hypotheses_.clear();
+  false_hypotheses_.clear();
+  corrs_.clear();
+  clusters_.clear();
 }
