@@ -12,45 +12,11 @@ ros_recognizer::Verifier::operator()(const ros_recognizer::Hypotheses& hyps,
                                      const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr& scene)
 {
   auto refined_hyps = refine(hyps, scene);
-  validate(refined_hyps, scene);
+
+  if (!refined_hyps.empty())
+    validate(refined_hyps, scene);
 
   return refined_hyps;
-}
-
-void ros_recognizer::Verifier::validate(ros_recognizer::Hypotheses& hyps,
-                                        const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr& scene)
-{
-  pcl::ScopeTime timeit("GlobalVerification");
-
-  std::vector<bool> hypotheses_mask(hyps.size(), false);
-  pcl::GlobalHypothesesVerification<pcl::PointXYZRGBA, pcl::PointXYZRGBA> hv;
-
-  hv.setSceneCloud(boost::const_pointer_cast<pcl::PointCloud<pcl::PointXYZRGBA>>(scene));
-
-  std::vector<pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr> instances;
-  {
-    pcl::ScopeTime timeit2("RegisteringInstances");
-    for (const auto& hyp : hyps)
-      instances.push_back(hyp.registered_model_);
-  }
-  hv.addModels(instances, true);
-
-  hv.setInlierThreshold(cfg_.hv_inlier_th);
-  hv.setOcclusionThreshold (cfg_.hv_occlusion_th);
-  hv.setRegularizer(cfg_.hv_regularizer);
-  hv.setRadiusClutter(cfg_.hv_rad_clutter);
-  hv.setClutterRegularizer(cfg_.hv_clutter_reg);
-  hv.setDetectClutter(cfg_.hv_detect_clutter);
-  hv.setRadiusNormals(cfg_.hv_rad_normals);
-
-  {
-    pcl::ScopeTime timeit2("VerifyAlone");
-    hv.verify();
-  }
-  hv.getMask(hypotheses_mask);
-
-  for (auto idx = 0u; idx < hypotheses_mask.size(); ++idx)
-    hyps.at(idx).is_valid_ = hypotheses_mask[idx];
 }
 
 ros_recognizer::Hypotheses
@@ -98,4 +64,40 @@ ros_recognizer::Verifier::refine(const ros_recognizer::Hypotheses& hyps,
     }
   }
   return refined_hyps;
+}
+
+void ros_recognizer::Verifier::validate(ros_recognizer::Hypotheses& hyps,
+                                        const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr& scene)
+{
+  pcl::ScopeTime timeit("GlobalVerification");
+
+  std::vector<bool> hypotheses_mask(hyps.size(), false);
+  pcl::GlobalHypothesesVerification<pcl::PointXYZRGBA, pcl::PointXYZRGBA> hv;
+
+  hv.setSceneCloud(boost::const_pointer_cast<pcl::PointCloud<pcl::PointXYZRGBA>>(scene));
+
+  std::vector<pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr> instances;
+  {
+    pcl::ScopeTime timeit2("RegisteringInstances");
+    for (const auto& hyp : hyps)
+      instances.push_back(hyp.registered_model_);
+  }
+  hv.addModels(instances, true);
+
+  hv.setInlierThreshold(cfg_.hv_inlier_th);
+  hv.setOcclusionThreshold (cfg_.hv_occlusion_th);
+  hv.setRegularizer(cfg_.hv_regularizer);
+  hv.setRadiusClutter(cfg_.hv_rad_clutter);
+  hv.setClutterRegularizer(cfg_.hv_clutter_reg);
+  hv.setDetectClutter(cfg_.hv_detect_clutter);
+  hv.setRadiusNormals(cfg_.hv_rad_normals);
+
+  {
+    pcl::ScopeTime timeit2("VerifyAlone");
+    hv.verify();
+  }
+  hv.getMask(hypotheses_mask);
+
+  for (auto idx = 0u; idx < hypotheses_mask.size(); ++idx)
+    hyps.at(idx).is_valid_ = hypotheses_mask[idx];
 }
