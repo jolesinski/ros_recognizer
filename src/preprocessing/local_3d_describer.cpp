@@ -15,7 +15,7 @@ ros_recognizer::Local3dDescriber::operator()(const sensor_msgs::PointCloud2& clo
     pcl::ScopeTime timeit("CloudLoad");
     pcl::fromROSMsg(cloud_msg, *description.input_);
   }
-  std::cout << "Data count: " << description.input_->size() << std::endl;
+  PCL_DEBUG("Describer: Input data count: %lu\n", description.input_->size());
 
   auto normals_loaded = std::any_of(std::begin(cloud_msg.fields), std::end(cloud_msg.fields),
                                     [](const sensor_msgs::PointField& field)
@@ -27,6 +27,7 @@ ros_recognizer::Local3dDescriber::operator()(const sensor_msgs::PointCloud2& clo
 
   //computeResolution(description);
   computeKeypoints(description);
+  PCL_DEBUG("Describer: Selected keypoints: %lu", description.keypoints_->size());
   //computeRefFrames(description);
   computeDescriptors(description);
   return description;
@@ -36,12 +37,12 @@ void ros_recognizer::Local3dDescriber::computeNormals(ros_recognizer::Local3dDes
 {
   pcl::ScopeTime timeit("Normals");
 
-  if(data.input_->isOrganized())
+  if(cfg_.use_integral_image && data.input_->isOrganized())
   {
-    PCL_INFO("IS ORGANIZED\n");
+    PCL_DEBUG("Describer: Input is organized\n");
     pcl::IntegralImageNormalEstimation<pcl::PointXYZRGBA, pcl::Normal> norm_est;
     norm_est.setNormalEstimationMethod(norm_est.AVERAGE_3D_GRADIENT);
-    norm_est.setMaxDepthChangeFactor(0.02);
+    norm_est.setMaxDepthChangeFactor(cfg_.descr_rad);
     norm_est.setDepthDependentSmoothing(true);
     norm_est.setNormalSmoothingSize(10);
     norm_est.setBorderPolicy(norm_est.BORDER_POLICY_MIRROR);
@@ -50,7 +51,7 @@ void ros_recognizer::Local3dDescriber::computeNormals(ros_recognizer::Local3dDes
   }
   else
   {
-    PCL_INFO("IS NOT ORGANIZED\n");
+    PCL_DEBUG("Describer: Input is NOT organized\n");
     pcl::NormalEstimationOMP<pcl::PointXYZRGBA, pcl::Normal> norm_est(cfg_.omp_threads);
     norm_est.setRadiusSearch(cfg_.descr_rad);
     norm_est.setInputCloud(data.input_);
@@ -127,5 +128,5 @@ void ros_recognizer::Local3dDescriber::computeDescriptors(ros_recognizer::Local3
   descr_est.setLRFRadius(cfg_.descr_rad);
   descr_est.setSearchSurface(data.input_);
   descr_est.compute(*data.descriptors_);
-  *data.ref_frames_ = *descr_est.getInputReferenceFrames();
+  pcl::copyPointCloud(*descr_est.getInputReferenceFrames(), *data.ref_frames_);
 }
