@@ -112,8 +112,10 @@ void ros_recognizer::Recognizer::initTopics()
   // Output
   scene_publisher_.initTopics(node_handle_, "scene");
   model_publisher_.initTopics(node_handle_, "model");
+
   correspondences_publisher = node_handle_.advertise<CorrespondenceArray>("correspondences", 1);
   clusters_publisher = node_handle_.advertise<CorrespondenceClusters>("clusters", 1);
+
   valid_hyps_publisher = node_handle_.advertise<geometry_msgs::PoseArray>("valid_hyps", 1);
   false_hyps_publisher = node_handle_.advertise<geometry_msgs::PoseArray>("false_hyps", 1);
 }
@@ -130,7 +132,9 @@ void ros_recognizer::Recognizer::publishResults(const ros_recognizer::Hypotheses
   geometry_msgs::PoseArrayPtr valid_pose_array(new geometry_msgs::PoseArray);
   geometry_msgs::PoseArrayPtr false_pose_array(new geometry_msgs::PoseArray);
 
-  convertMsgToHypotheses(hyps, *valid_pose_array, *false_pose_array);
+  convertHypothesesToMsg(hyps, *valid_pose_array, *false_pose_array);
+
+
 
   NODELET_INFO("Sending hypotheses %lu %lu %lu", hyps.size(), valid_pose_array->poses.size(), false_pose_array->poses.size());
 

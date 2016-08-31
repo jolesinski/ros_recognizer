@@ -23,7 +23,7 @@ inline Hypotheses convertMsgToHypotheses(const geometry_msgs::PoseArray msg,
     hypothesis.pose_ = affine.matrix().cast<float>();
     hypothesis.input_model_ = model;
     hypothesis.registered_model_.reset(new pcl::PointCloud<pcl::PointXYZRGBA>);
-    pcl::transformPointCloud(*model, *hypothesis.registered_model_, affine.cast<float>());
+    pcl::transformPointCloud(*model, *hypothesis.registered_model_, hypothesis.pose_);
     hypothesis.is_valid_ = is_valid;
     hyps.push_back(hypothesis);
   }
@@ -31,7 +31,7 @@ inline Hypotheses convertMsgToHypotheses(const geometry_msgs::PoseArray msg,
   return hyps;
 }
 
-inline void convertMsgToHypotheses(const ros_recognizer::Hypotheses& hyps,
+inline void convertHypothesesToMsg(const ros_recognizer::Hypotheses& hyps,
                                    geometry_msgs::PoseArray& valid_poses,
                                    geometry_msgs::PoseArray& false_poses)
 {
