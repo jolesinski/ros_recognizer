@@ -95,7 +95,7 @@ ros_recognizer::LocalMatcher::clusterize(const ros_recognizer::Local3dDescriptio
   clusterer.recognize(poses, clusters);
 
   ros_recognizer::Hypotheses hypotheses;
-  for (int idx = 0; idx < poses.size(); ++idx)
+  for (auto idx = 0u; idx < poses.size(); ++idx)
   {
     // If RANSAC inside clusterer fails to estimate pose
     // identity is returned. True identity is hardly posible.

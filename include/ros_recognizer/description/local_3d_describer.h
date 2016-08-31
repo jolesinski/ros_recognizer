@@ -2,10 +2,11 @@
 #ifndef ROS_RECOGNIZER_LOCAL_3D_PREPROCESSOR_H
 #define ROS_RECOGNIZER_LOCAL_3D_PREPROCESSOR_H
 
-#include <ros_recognizer/DescriberConfig.h>
-#include <ros_recognizer/common/reconfigurable.h>
-#include <ros_recognizer/preprocessing/local_3d_description.h>
 #include <sensor_msgs/PointCloud2.h>
+
+#include <ros_recognizer/common/reconfigurable.h>
+#include <ros_recognizer/description/local_3d_description.h>
+#include <ros_recognizer/DescriberConfig.h>
 
 namespace ros_recognizer
 {

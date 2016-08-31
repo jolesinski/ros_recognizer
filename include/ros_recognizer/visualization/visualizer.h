@@ -3,7 +3,7 @@
 #define ROS_RECOGNIZER_VISUALIZER_H
 
 #include <ros_recognizer/common/reconfigurable.h>
-#include <ros_recognizer/preprocessing/local_3d_description.h>
+#include <ros_recognizer/description/local_3d_description.h>
 #include <ros_recognizer/matching/hypotheses.h>
 #include <ros_recognizer/VisualizerConfig.h>
 

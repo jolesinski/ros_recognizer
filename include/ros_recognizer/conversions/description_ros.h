@@ -2,9 +2,10 @@
 #ifndef ROS_RECOGNIZER_DESCRIPTION_TO_ROS_H
 #define ROS_RECOGNIZER_DESCRIPTION_TO_ROS_H
 
-#include <ros/ros.h>
 #include <pcl_ros/point_cloud.h>
-#include <ros_recognizer/preprocessing/local_3d_describer.h>
+#include <ros/ros.h>
+
+#include <ros_recognizer/description/local_3d_describer.h>
 
 namespace ros_recognizer
 {

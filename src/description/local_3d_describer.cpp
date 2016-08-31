@@ -1,4 +1,5 @@
-#include <ros_recognizer/preprocessing/local_3d_describer.h>
+#include <ros_recognizer/description/local_3d_describer.h>
+
 #include <pcl/common/time.h>
 #include <pcl/features/board.h>
 #include <pcl/features/integral_image_normal.h>

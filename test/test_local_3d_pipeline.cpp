@@ -1,11 +1,10 @@
-#define ROS_RECOGNIZER_OUTSIDE_ROS_NODE
-
 #include <gtest/gtest.h>
 
 #include <pcl/io/pcd_io.h>
 #include <pcl_conversions/pcl_conversions.h>
+
+#include <ros_recognizer/description/local_3d_describer.h>
 #include <ros_recognizer/matching/local_matcher.h>
-#include <ros_recognizer/preprocessing/local_3d_describer.h>
 #include <ros_recognizer/verification/verifier.h>
 
 struct Local3dPipeline : testing::Test {

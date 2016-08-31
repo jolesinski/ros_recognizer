@@ -2,16 +2,17 @@
 #ifndef ROS_RECOGNIZER_RECOGNIZER_H
 #define ROS_RECOGNIZER_RECOGNIZER_H
 
-#include <nodelet/nodelet.h>
 #include <geometry_msgs/PoseArray.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <nodelet/nodelet.h>
 #include <ros/ros.h>
+
 #include <ros_recognizer/common/dynamic_configurator.h>
+#include <ros_recognizer/conversions/description_ros.h>
+#include <ros_recognizer/description/local_3d_describer.h>
+#include <ros_recognizer/matching/local_matcher.h>
 #include <ros_recognizer/set_model_from_cloud.h>
 #include <ros_recognizer/set_model_from_pcd.h>
-#include <ros_recognizer/preprocessing/local_3d_describer.h>
-#include <ros_recognizer/conversions/description_ros.h>
-#include <ros_recognizer/matching/local_matcher.h>
 #include <ros_recognizer/verification/verifier.h>
 
 namespace ros_recognizer

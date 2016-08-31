@@ -61,7 +61,7 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES
-    ros_recognizer_preprocessing
+    ros_recognizer_description
   CATKIN_DEPENDS
     dynamic_reconfigure
     nodelet
@@ -82,14 +82,14 @@ include_directories(
   ${Boost_INCLUDE_DIRS}
 )
 
-add_library(ros_recognizer_preprocessing
-  src/preprocessing/local_3d_describer.cpp
+add_library(ros_recognizer_description
+  src/description/local_3d_describer.cpp
 )
-target_link_libraries(ros_recognizer_preprocessing
+target_link_libraries(ros_recognizer_description
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
 )
-add_dependencies(ros_recognizer_preprocessing ${PROJECT_NAME}_gencfg)
+add_dependencies(ros_recognizer_description ${PROJECT_NAME}_gencfg)
 
 add_library(ros_recognizer_matching
     src/matching/local_matcher.cpp
@@ -123,7 +123,7 @@ add_library(ros_recognizer_nodelets
     src/nodelet/viewer.cpp
 )
 target_link_libraries(ros_recognizer_nodelets
-    ros_recognizer_preprocessing
+    ros_recognizer_description
     ros_recognizer_matching
     ros_recognizer_verification
     ros_recognizer_visualization
@@ -149,7 +149,7 @@ catkin_add_gtest(test_recognition
 )
 if(TARGET test_recognition)
   target_link_libraries(test_recognition
-      ros_recognizer_preprocessing
+      ros_recognizer_description
       ros_recognizer_matching
       ros_recognizer_verification
       ${PCL_LIBRARIES}
