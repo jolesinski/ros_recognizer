@@ -79,7 +79,6 @@ ros_recognizer::LocalMatcher::clusterize(const ros_recognizer::Local3dDescriptio
   pcl::ScopeTime timeit("Clustering");
 
   //TODO: efficiency: train is called on first run
-  //TODO: rewrite to use color (from v4r)
   pcl::Hough3DGrouping<pcl::PointXYZRGBA, pcl::PointXYZRGBA> clusterer;
   clusterer.setHoughBinSize (cfg_.cluster_size);
   clusterer.setHoughThreshold (cfg_.cluster_thresh);
@@ -96,20 +95,28 @@ ros_recognizer::LocalMatcher::clusterize(const ros_recognizer::Local3dDescriptio
   clusterer.recognize(poses, clusters);
 
   ros_recognizer::Hypotheses hypotheses;
-  for (const Pose& pose : poses)
+  for (int idx = 0; idx < poses.size(); ++idx)
   {
     // If RANSAC inside clusterer fails to estimate pose
     // identity is returned. True identity is hardly posible.
-    if(pose == Eigen::Matrix4f::Identity())
+    if(poses[idx] == Eigen::Matrix4f::Identity())
     {
-      PCL_ERROR("Matcher: IDENTITY hipothesis\n");
-      continue;
+      PCL_ERROR("Matcher: IDENTITY hypothesis\n");
+      clusters.erase(std::begin(clusters) + idx);
     }
-
-    Hypothesis hyp;
-    hyp.pose_ = pose;
-    hyp.input_model_ = model.input_;
-    hypotheses.push_back(hyp);
+    // FIXME: Bug in PCL
+    else if(poses[idx].block(0,0,3,3).determinant() < 0)
+    {
+      PCL_ERROR("Matcher: improper rotation\n");
+      clusters.erase(std::begin(clusters) + idx);
+    }
+    else
+    {
+      Hypothesis hyp;
+      hyp.pose_ = poses[idx];
+      hyp.input_model_ = model.input_;
+      hypotheses.push_back(hyp);
+    }
   }
   return hypotheses;
 }

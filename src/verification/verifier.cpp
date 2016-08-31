@@ -72,6 +72,7 @@ void ros_recognizer::Verifier::validate(ros_recognizer::Hypotheses& hyps,
   pcl::ScopeTime timeit("GlobalVerification");
 
   std::vector<bool> hypotheses_mask(hyps.size(), false);
+  //TODO: rewrite to use color (from v4r)
   pcl::GlobalHypothesesVerification<pcl::PointXYZRGBA, pcl::PointXYZRGBA> hv;
 
   hv.setSceneCloud(boost::const_pointer_cast<pcl::PointCloud<pcl::PointXYZRGBA>>(scene));
